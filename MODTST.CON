@@ -1,0 +1,129 @@
+var SCR_W 20971520
+var SCR_H 13107200
+
+var SCR_W_HALF 10485760
+
+var CURSOR_X
+var CURSOR_Y
+
+appendevent EVENT_ENTERLEVEL
+    setp[].over_shoulder_on 1
+    set CURSOR_X SCR_W
+    set CURSOR_Y SCR_H
+    div CURSOR_X 2
+    div CURSOR_Y 2
+endevent
+
+
+onevent EVENT_PREUPDATEANGLES
+    var DELTA_X
+    var DELTA_Y
+
+    geti[].q16avel DELTA_X
+    geti[].q16horz DELTA_Y
+
+    add CURSOR_X DELTA_X
+    sub CURSOR_Y DELTA_Y
+
+    clamp CURSOR_X 0 SCR_W
+    clamp CURSOR_Y 0 SCR_H
+
+    seti[].q16horz 0
+    seti[].q16avel 0
+endevent
+
+onevent EVENT_DISPLAYCROSSHAIR
+    setu[].return 1 CURSOR_X
+    setu[].return 2 CURSOR_Y
+endevent
+
+
+// Grabby hand!
+action HAND_SPAWN 0 1 1 0 7
+action HAND_GRAHB 0 1 1 0 7
+
+define GRABBYHAND 3584
+useractor 0 GRABBYHAND 0 HAND_SPAWN
+    ifaction HAND_SPAWN {
+        sizeat 40 40
+        action HAND_GRAHB
+    }
+    ifaction HAND_GRAHB
+        move GRABBYHAND geth getv
+enda
+
+
+defstate gameClick
+    var MY_X
+    var MY_Y
+    var MY_Z
+    var MY_SECTOR
+    var MY_COS
+    var MY_SIN
+    var MY_ZDIST
+    var HITSECTOR
+    var HITWALL
+    var HITSPRITE
+    var HITX
+    var HITY
+    var HITZ
+    var MY_ANGLE
+
+	set MY_ANGLE cameraang
+	getplayer[THISACTOR].horiz MY_ZDIST
+	subvar MY_ZDIST 100
+	mulvar MY_ZDIST -2048
+
+    // Offset the angle by crosshair positioning
+    var ANGLE_OFFSET 0
+    var FOV
+    getu[THISACTOR].fov FOV
+
+
+    set ANGLE_OFFSET CURSOR_X
+    sub ANGLE_OFFSET SCR_W_HALF
+    shiftvarr ANGLE_OFFSET 16
+
+    mul ANGLE_OFFSET 80
+    div ANGLE_OFFSET 50
+
+    // mul ANGLE_OFFSET FOV
+    // div ANGLE_OFFSET 160
+
+    add MY_ANGLE ANGLE_OFFSET
+
+	cos MY_COS MY_ANGLE
+	sin MY_SIN MY_ANGLE
+    
+    // This is useful for detecting items directly. Consider for only grabbing valid stuff
+    // hitscan camerax cameray cameraz camerasect MY_COS MY_SIN MY_ZDIST HITSECTOR HITWALL HITSPRITE HITX HITY HITZ 4294901808
+    // ifn HITSPRITE -1
+    //     quote 7
+
+    espawn GRABBYHAND
+    shiftvarr MY_COS 16
+    shiftvarr MY_SIN 16
+    seta[RETURN].xvel MY_COS
+    seta[RETURN].yvel MY_SIN
+
+    set RETURN -1
+ends
+
+onevent EVENT_PRESSEDFIRE
+    set RETURN -1
+endevent
+
+var JUSTCLICKED
+appendevent EVENT_PROCESSINPUT
+    var INP
+    geti[].bits INP 
+    ifand INP 4 {
+        ife JUSTCLICKED 0 {
+            set JUSTCLICKED 1
+            state gameClick
+        }
+    }
+    else
+        ife JUSTCLICKED 1
+            set JUSTCLICKED 0
+endevent
