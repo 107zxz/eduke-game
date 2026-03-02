@@ -112,7 +112,7 @@ useractor 0 GRABBYHAND 0 HAND_SPAWN
                 seta[GRABTARGET].xrepeat 0
 
                 add MOOLAH 200
-                redefinequote 667 Stole chair!
+                redefinequote 667 Stole chair! ($200)
                 quote 667
                 
                 killit
@@ -209,18 +209,21 @@ endevent
 
 // Custom HUD
 onevent EVENT_DISPLAYSBAR
-    redefinequote 666 Spoils: $%d
+    redefinequote 666 Stolen: $%d/$6000
     qsprintf 666 666 MOOLAH
 
-    gametext 2822 0 1 666 0 0 26 0 0 xdim ydim
+    gametext 2822 0 192 666 0 0 26 0 0 xdim ydim
 
     set RETURN -1
 endevent
 
 // Floor based camera angle setting
 onevent EVENT_GAME
+    var APLAYER
+    set APLAYER 0
+
     var PSECT
-    getp[].cursectnum PSECT
+    getp[APLAYER].cursectnum PSECT
 
     var SECLOW
     var SECHI
@@ -231,20 +234,26 @@ onevent EVENT_GAME
         var TARGETANG
         var PLANG
         set TARGETANG SECHI
-        getp[].ang PLANG
+        getp[APLAYER].ang PLANG
 
         getincangle TARGETANG PLANG TARGETANG
-        div TARGETANG 50
 
-        ifl TARGETANG 1 {
-            ifg TARGETANG -1 {
-                setp[].ang SECHI
-                terminate
-            }
-        }
+        // ifl TARGETANG 100 {
+        //     ifg TARGETANG -100 {
+        //         setp[APLAYER].ang SECHI
+        //         terminate
+        //     }
+        // }
+
+        // div TARGETANG 100
+
+        ifg TARGETANG 2
+            set TARGETANG 3
+        ifl TARGETANG -2
+            set TARGETANG -3
 
         add TARGETANG PLANG
 
-        setp[].ang TARGETANG
+        setp[APLAYER].ang TARGETANG
     }
 endevent
