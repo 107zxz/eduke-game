@@ -6,6 +6,9 @@ var SCR_W_HALF 10485760
 var CURSOR_X
 var CURSOR_Y
 
+var MOOLAH
+
+
 appendevent EVENT_ENTERLEVEL
     setp[].over_shoulder_on 1
     set CURSOR_X SCR_W
@@ -39,17 +42,83 @@ endevent
 
 
 // Grabby hand!
-action HAND_SPAWN 0 1 1 0 7
-action HAND_GRAHB 0 1 1 0 7
+action HAND_SPAWN 0 1 1 0 3
+action HAND_GRAHB 0 1 1 0 3
+action HAND_RETRC 0 1 1 0 3
 
-define GRABBYHAND 3584
+define GRABBYHAND 3584 // Temp sprite number
 useractor 0 GRABBYHAND 0 HAND_SPAWN
     ifaction HAND_SPAWN {
         sizeat 40 40
         action HAND_GRAHB
     }
-    ifaction HAND_GRAHB
-        move GRABBYHAND geth getv
+    ifaction HAND_GRAHB {
+        var DELTA_X
+        var DELTA_Y
+        var MY_X
+        var MY_Y
+        var MY_ANGLE
+        var GRABTARGET
+
+        geta[].hitag GRABTARGET
+        
+        geta[GRABTARGET].x DELTA_X
+        geta[GRABTARGET].y DELTA_Y
+        geta[].x MY_X
+        geta[].y MY_Y
+        sub DELTA_X MY_X
+        sub DELTA_Y MY_Y
+
+        // shiftvarr DELTA_X 1
+        // shiftvarr DELTA_Y 1
+        
+        movesprite THISACTOR DELTA_X DELTA_Y 0 0 RETURN
+
+        ifl DELTA_X 50 ifg DELTA_X -50 {
+            ifl DELTA_Y 50 ifg DELTA_Y -50 {
+                // quote 9
+                action HAND_RETRC
+            }
+        }
+    }
+    ifaction HAND_RETRC {
+        var DELTA_X
+        var DELTA_Y
+        var MY_X
+        var MY_Y
+        var MY_ANGLE
+
+        var APLAYER
+        findplayer APLAYER
+
+        var GRABTARGET
+        geta[].hitag GRABTARGET
+        
+        getp[].posx DELTA_X
+        getp[].posy DELTA_Y
+        geta[].x MY_X
+        geta[].y MY_Y
+        sub DELTA_X MY_X
+        sub DELTA_Y MY_Y
+
+        movesprite THISACTOR DELTA_X DELTA_Y 0 0 RETURN
+        // Move the target
+        seta[GRABTARGET].x MY_X
+        seta[GRABTARGET].y MY_Y
+
+        ifl DELTA_X 500 ifg DELTA_X -500 {
+            ifl DELTA_Y 500 ifg DELTA_Y -500 {
+                changespritestat GRABTARGET 1
+                seta[GRABTARGET].xrepeat 0
+
+                add MOOLAH 200
+                redefinequote 667 Stole chair!
+                quote 667
+                
+                killit
+            }
+        }
+    }
 enda
 
 
@@ -84,11 +153,9 @@ defstate gameClick
     sub ANGLE_OFFSET SCR_W_HALF
     shiftvarr ANGLE_OFFSET 16
 
-    mul ANGLE_OFFSET 80
-    div ANGLE_OFFSET 50
-
-    // mul ANGLE_OFFSET FOV
-    // div ANGLE_OFFSET 160
+    // mul ANGLE_OFFSET 80
+    // div ANGLE_OFFSET 50
+    scalevar ANGLE_OFFSET ANGLE_OFFSET 80 50
 
     add MY_ANGLE ANGLE_OFFSET
 
@@ -96,15 +163,26 @@ defstate gameClick
 	sin MY_SIN MY_ANGLE
     
     // This is useful for detecting items directly. Consider for only grabbing valid stuff
-    // hitscan camerax cameray cameraz camerasect MY_COS MY_SIN MY_ZDIST HITSECTOR HITWALL HITSPRITE HITX HITY HITZ 4294901808
-    // ifn HITSPRITE -1
-    //     quote 7
+    hitscan camerax cameray cameraz camerasect MY_COS MY_SIN MY_ZDIST HITSECTOR HITWALL HITSPRITE HITX HITY HITZ 4294901808
+    ifn HITSPRITE -1 {
+        var PX
+        var PY
+        var DELTA_X
+        var DELTA_Y
+        geta[HITSPRITE].x DELTA_X
+        geta[HITSPRITE].y DELTA_Y
+        geta[].x PX
+        geta[].y PY
 
-    espawn GRABBYHAND
-    shiftvarr MY_COS 16
-    shiftvarr MY_SIN 16
-    seta[RETURN].xvel MY_COS
-    seta[RETURN].yvel MY_SIN
+        sub DELTA_X PX
+        sub DELTA_Y PY
+
+        getangle MY_ANGLE DELTA_X DELTA_Y
+
+        espawn GRABBYHAND
+        // set GRABTARGET HITSPRITE
+        seta[RETURN].hitag HITSPRITE
+    }
 
     set RETURN -1
 ends
@@ -126,4 +204,47 @@ appendevent EVENT_PROCESSINPUT
     else
         ife JUSTCLICKED 1
             set JUSTCLICKED 0
+endevent
+
+
+// Custom HUD
+onevent EVENT_DISPLAYSBAR
+    redefinequote 666 Spoils: $%d
+    qsprintf 666 666 MOOLAH
+
+    gametext 2822 0 1 666 0 0 26 0 0 xdim ydim
+
+    set RETURN -1
+endevent
+
+// Floor based camera angle setting
+onevent EVENT_GAME
+    var PSECT
+    getp[].cursectnum PSECT
+
+    var SECLOW
+    var SECHI
+    gets[PSECT].lotag SECLOW
+    gets[PSECT].hitag SECHI
+
+    ife SECLOW 32 {
+        var TARGETANG
+        var PLANG
+        set TARGETANG SECHI
+        getp[].ang PLANG
+
+        getincangle TARGETANG PLANG TARGETANG
+        div TARGETANG 50
+
+        ifl TARGETANG 1 {
+            ifg TARGETANG -1 {
+                setp[].ang SECHI
+                terminate
+            }
+        }
+
+        add TARGETANG PLANG
+
+        setp[].ang TARGETANG
+    }
 endevent
