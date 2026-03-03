@@ -46,12 +46,12 @@ action HAND_SPAWN 0 1 1 0 3
 action HAND_GRAHB 0 1 1 0 3
 action HAND_RETRC 0 1 1 0 3
 
-define GRABBYHAND 3584 // Temp sprite number
+define GRABBYHAND 2564 // Temp sprite number
 useractor 0 GRABBYHAND 0 HAND_SPAWN
     ifaction HAND_SPAWN {
         sound KICK_HIT
 
-        sizeat 40 40
+        sizeat 30 30
         action HAND_GRAHB
     }
     ifaction HAND_GRAHB {
