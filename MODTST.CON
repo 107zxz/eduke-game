@@ -49,6 +49,8 @@ action HAND_RETRC 0 1 1 0 3
 define GRABBYHAND 3584 // Temp sprite number
 useractor 0 GRABBYHAND 0 HAND_SPAWN
     ifaction HAND_SPAWN {
+        sound KICK_HIT
+
         sizeat 40 40
         action HAND_GRAHB
     }
@@ -69,16 +71,35 @@ useractor 0 GRABBYHAND 0 HAND_SPAWN
         sub DELTA_X MY_X
         sub DELTA_Y MY_Y
 
+        var GRABPIC
+        geta[GRABTARGET].picnum GRABPIC
+
         // shiftvarr DELTA_X 1
         // shiftvarr DELTA_Y 1
         
         movesprite THISACTOR DELTA_X DELTA_Y 0 0 RETURN
 
-        ifl DELTA_X 50 ifg DELTA_X -50 {
-            ifl DELTA_Y 50 ifg DELTA_Y -50 {
-                // quote 9
-                action HAND_RETRC
+        var DELTA_DIST
+        calchypotenuse DELTA_DIST DELTA_X DELTA_Y
+
+        ifl DELTA_DIST 250 {
+            // quote 9
+            ife GRABPIC 132 {
+                var SW_LOWER
+                geta[GRABTARGET].lotag SW_LOWER
+                seta[GRABTARGET].picnum 133
+                operateactivators SW_LOWER 0
+                sound SWITCH_ON
             }
+            ife GRABPIC 133 {
+                var SW_LOWER
+                geta[GRABTARGET].lotag SW_LOWER
+                seta[GRABTARGET].picnum 132
+                operateactivators SW_LOWER 0
+                sound SWITCH_ON
+            }
+
+            action HAND_RETRC
         }
     }
     ifaction HAND_RETRC {
@@ -92,7 +113,11 @@ useractor 0 GRABBYHAND 0 HAND_SPAWN
         findplayer APLAYER
 
         var GRABTARGET
+        var GRABPIC
         geta[].hitag GRABTARGET
+        geta[GRABTARGET].picnum GRABPIC
+
+        // Special case: If it's a switch we *REALLY* don't want to pull it back
         
         getp[].posx DELTA_X
         getp[].posy DELTA_Y
@@ -103,17 +128,26 @@ useractor 0 GRABBYHAND 0 HAND_SPAWN
 
         movesprite THISACTOR DELTA_X DELTA_Y 0 0 RETURN
         // Move the target
-        seta[GRABTARGET].x MY_X
-        seta[GRABTARGET].y MY_Y
+
+        ifn GRABPIC 132 ifn GRABPIC 133 {
+            seta[GRABTARGET].x MY_X
+            seta[GRABTARGET].y MY_Y
+        }
+
 
         ifl DELTA_X 500 ifg DELTA_X -500 {
             ifl DELTA_Y 500 ifg DELTA_Y -500 {
-                changespritestat GRABTARGET 1
-                seta[GRABTARGET].xrepeat 0
 
-                add MOOLAH 200
-                redefinequote 667 Stole chair! ($200)
-                quote 667
+                ifn GRABPIC 132 ifn GRABPIC 133 {
+                    changespritestat GRABTARGET 1
+                    seta[GRABTARGET].xrepeat 0
+                }
+
+                ife GRABPIC 556 {
+                    add MOOLAH 200
+                    redefinequote 667 Stole chair! ($200)
+                    userquote 667
+                }
                 
                 killit
             }
@@ -153,8 +187,7 @@ defstate gameClick
     sub ANGLE_OFFSET SCR_W_HALF
     shiftvarr ANGLE_OFFSET 16
 
-    // mul ANGLE_OFFSET 80
-    // div ANGLE_OFFSET 50
+    // Magic numbers, I got these on a calculator and they suck.
     scalevar ANGLE_OFFSET ANGLE_OFFSET 80 50
 
     add MY_ANGLE ANGLE_OFFSET
@@ -180,7 +213,6 @@ defstate gameClick
         getangle MY_ANGLE DELTA_X DELTA_Y
 
         espawn GRABBYHAND
-        // set GRABTARGET HITSPRITE
         seta[RETURN].hitag HITSPRITE
     }
 
@@ -209,10 +241,12 @@ endevent
 
 // Custom HUD
 onevent EVENT_DISPLAYSBAR
-    redefinequote 666 Stolen: $%d/$6000
+    redefinequote 666 Moolah: $%d/$6000
     qsprintf 666 666 MOOLAH
 
     gametext 2822 0 192 666 0 0 26 0 0 xdim ydim
+    // TODO: Port to screentext
+    // screentext 2822 0 0 65536 0 0 666 0 0 26 255 8 8 8 8 2 0 0 xdim ydim
 
     set RETURN -1
 endevent
@@ -237,15 +271,6 @@ onevent EVENT_GAME
         getp[APLAYER].ang PLANG
 
         getincangle TARGETANG PLANG TARGETANG
-
-        // ifl TARGETANG 100 {
-        //     ifg TARGETANG -100 {
-        //         setp[APLAYER].ang SECHI
-        //         terminate
-        //     }
-        // }
-
-        // div TARGETANG 100
 
         ifg TARGETANG 2
             set TARGETANG 3
