@@ -10,11 +10,14 @@ var MOOLAH
 
 
 appendevent EVENT_ENTERLEVEL
-    setp[].over_shoulder_on 1
     set CURSOR_X SCR_W
     set CURSOR_Y SCR_H
     div CURSOR_X 2
     div CURSOR_Y 2
+
+    // Fix camera pos, siigh
+    setp[].over_shoulder_on 1
+    set cameraclock 0
 endevent
 
 
@@ -144,9 +147,11 @@ useractor 0 GRABBYHAND 0 HAND_SPAWN
                 }
 
                 ife GRABPIC 556 {
-                    add MOOLAH 200
-                    redefinequote 667 Stole chair! ($200)
+                    add MOOLAH 1
+                    redefinequote 667 Stole chair!
                     userquote 667
+
+                    money 5
                 }
                 
                 killit
@@ -182,6 +187,7 @@ defstate gameClick
     var FOV
     getu[THISACTOR].fov FOV
 
+    // TODO: Shove in an arctan here (sigmoid function) to fix hitscan
 
     set ANGLE_OFFSET CURSOR_X
     sub ANGLE_OFFSET SCR_W_HALF
@@ -241,12 +247,29 @@ endevent
 
 // Custom HUD
 onevent EVENT_DISPLAYSBAR
-    redefinequote 666 Moolah: $%d/$6000
+    redefinequote 666 Chairs: %d/30
     qsprintf 666 666 MOOLAH
 
-    gametext 2822 0 192 666 0 0 26 0 0 xdim ydim
-    // TODO: Port to screentext
-    // screentext 2822 0 0 65536 0 0 666 0 0 26 255 8 8 8 8 2 0 0 xdim ydim
+    var TXTORI
+    set TXTORI 0
+    or TXTORI 2
+    // and TXTORI 256
+
+    var TXTFLG
+    set TXTFLG 0
+    or TXTFLG 1
+    or TXTFLG 4
+    // and TXTFLG 262144
+
+    // gametext 2822 0 192 666 0 0 26 0 0 xdim ydim
+    screentext 2822 320 16 65536 0 0 666 0 0 TXTORI 0 5 8 0 0 TXTFLG 0 0 xdim ydim
+
+    var BARORI
+    set BARORI 0
+    or BARORI 2
+    or BARORI 8
+    // rotatesprite <x> <y> <zoom> <ang> <tilenum> <shade> <pal> <orientation> <x1> <y1> <x2> <y2>
+    // rotatesprite 0 0 65536 0 20 0 0 BARORI 0 0 xdim ydim
 
     set RETURN -1
 endevent
@@ -282,3 +305,59 @@ onevent EVENT_GAME
         setp[APLAYER].ang TARGETANG
     }
 endevent
+
+onevent EVENT_JUMP
+    set RETURN -1
+endevent
+
+// action <name> <startframe> <frames> <viewtype> <incvalue> <delay> 
+action FIRE_SPAWN 0 1 1 0 3
+action FIRE_BURN 0 13 1 1 3
+define FIRE_SPR 2310
+// useractor <type> <picnum> [strength] [action] [move] [moveflag 1] [...] [moveflag N]
+useractor 0 FIRE_SPR 0 FIRE_SPAWN
+    ifaction FIRE_SPAWN {
+        sizeat 255 150
+        seta[].yoffset 1750
+        seta[].alpha 128
+        action FIRE_BURN
+    }
+    ifaction FIRE_BURN {
+
+        var APLAYER
+        set APLAYER 0
+
+        var PX
+        var PY
+
+        var CX
+        var CY
+
+        getp[APLAYER].posx PX
+        getp[APLAYER].posy PY
+
+        geta[].x CX
+        geta[].y CY
+
+        var TX
+
+        set TX PX
+        sub TX CX
+        div TX 5
+
+        add CX TX
+        seta[].x CX
+
+        ifl PY CY
+            sub CY 30
+        else
+            set CY PY
+
+        seta[].y CY
+
+        // Burn the playa
+        ifpdistl 800 {
+            addphealth -200
+        }
+    }
+enda
