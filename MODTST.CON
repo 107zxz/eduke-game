@@ -2,12 +2,12 @@ var SCR_W 20971520
 var SCR_H 13107200
 
 var SCR_W_HALF 10485760
-
 var CURSOR_X
 var CURSOR_Y
 
-var MOOLAH
+var MOOLAH 0
 
+var FIRE_ACTOR
 
 appendevent EVENT_ENTERLEVEL
     set CURSOR_X SCR_W
@@ -138,6 +138,7 @@ useractor 0 GRABBYHAND 0 HAND_SPAWN
         }
 
 
+        // Returned to player
         ifl DELTA_X 500 ifg DELTA_X -500 {
             ifl DELTA_Y 500 ifg DELTA_Y -500 {
 
@@ -264,12 +265,31 @@ onevent EVENT_DISPLAYSBAR
     // gametext 2822 0 192 666 0 0 26 0 0 xdim ydim
     screentext 2822 320 16 65536 0 0 666 0 0 TXTORI 0 5 8 0 0 TXTFLG 0 0 xdim ydim
 
-    var BARORI
-    set BARORI 0
-    or BARORI 2
-    or BARORI 8
-    // rotatesprite <x> <y> <zoom> <ang> <tilenum> <shade> <pal> <orientation> <x1> <y1> <x2> <y2>
-    // rotatesprite 0 0 65536 0 20 0 0 BARORI 0 0 xdim ydim
+    // Fire progress
+    var FIREORI 6
+ 
+    // Player progress
+    var PLAYER_X
+    getp[].posy PLAYER_X
+    xor PLAYER_X 0xFFFFFFFF
+    add PLAYER_X 320
+    shiftvarr PLAYER_X 8
+    rotatesprite PLAYER_X 180 65536 1024 1446 0 0 FIREORI 0 0 xdim ydim
+
+    var FIRE_SPR
+    set FIRE_SPR 2310
+    var CLK
+    set CLK cameraclock
+    shiftvarr CLK 2
+    mod CLK 9
+    add FIRE_SPR CLK
+
+    var FIRE_X
+    geta[FIRE_ACTOR].y FIRE_X
+    xor FIRE_X 0xFFFFFFFF
+    add FIRE_X 320
+    shiftvarr FIRE_X 8
+    rotatesprite FIRE_X 200 65536 1024 FIRE_SPR 0 0 FIREORI 0 0 xdim ydim
 
     set RETURN -1
 endevent
@@ -314,12 +334,15 @@ endevent
 action FIRE_SPAWN 0 1 1 0 3
 action FIRE_BURN 0 13 1 1 3
 define FIRE_SPR 2310
+
 // useractor <type> <picnum> [strength] [action] [move] [moveflag 1] [...] [moveflag N]
 useractor 0 FIRE_SPR 0 FIRE_SPAWN
     ifaction FIRE_SPAWN {
         sizeat 255 150
         seta[].yoffset 1750
         seta[].alpha 128
+        
+        set FIRE_ACTOR THISACTOR
         action FIRE_BURN
     }
     ifaction FIRE_BURN {
@@ -349,7 +372,7 @@ useractor 0 FIRE_SPR 0 FIRE_SPAWN
         seta[].x CX
 
         ifl PY CY
-            sub CY 30
+            sub CY 60
         else
             set CY PY
 
