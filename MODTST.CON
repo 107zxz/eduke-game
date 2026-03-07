@@ -10,6 +10,11 @@ var KEEPER_ACTOR
 
 var MOOLAH
 
+// Custom menu system
+// 0 -> No menu
+// 1 -> Elevator Menu
+var INGAMEMENU 0
+
 appendevent EVENT_ENTERLEVEL
     set CURSOR_X SCR_W
     set CURSOR_Y SCR_H
@@ -165,8 +170,18 @@ useractor 0 GRABBYHAND 0 HAND_SPAWN
     }
 enda
 
+defstate menuClick
+
+ends
 
 defstate gameClick
+
+    // If the player is in a menu, we have our own logic for that.
+    ifn INGAMEMENU 0 {
+        state menuClick
+        terminate
+    }
+
     var MY_X
     var MY_Y
     var MY_Z
@@ -249,6 +264,13 @@ appendevent EVENT_PROCESSINPUT
             set JUSTCLICKED 0
 endevent
 
+state screenmenu
+    ife INGAMEMENU 0
+        terminate
+
+    // rotatesprite <x> <y> <zoom> <ang> <tilenum> <shade> <pal> <orientation> <x1> <y1> <x2> <y2>
+    rotatesprite 0 0 65536 0 2456 0 0 1040 0 0 xdim ydim
+ends
 
 // Custom HUD
 onevent EVENT_DISPLAYSBAR
@@ -314,11 +336,20 @@ onevent EVENT_DISPLAYSBAR
     setp[].pals 0 63
     setp[].pals 1 15
 
+    // Custom menus! Shop etc
+    state screenmenu
+
     set RETURN -1
 endevent
 
 // Floor based camera angle setting
 onevent EVENT_GAME
+
+    // Atm everything here can pause while we're in a menu
+    ifn INGAMEMENU 0 {
+        terminate
+    }
+
     var APLAYER
     set APLAYER 0
 
@@ -330,6 +361,7 @@ onevent EVENT_GAME
     gets[PSECT].lotag SECLOW
     gets[PSECT].hitag SECHI
 
+    // Camera turn sector, HITAG is angle
     ife SECLOW 32 {
         var TARGETANG
         var PLANG
@@ -346,6 +378,13 @@ onevent EVENT_GAME
         add TARGETANG PLANG
 
         setp[APLAYER].ang TARGETANG
+    }
+
+    // End level elevator. Open the elevator screen and move the player (?)
+    // Depends on if the screen is a level warp or not
+    ife SECLOW 33 {
+        // Opening the actual game menu is restricted for some ungodly reason, so let's fake it!
+        set INGAMEMENU 1
     }
 endevent
 
@@ -369,6 +408,11 @@ useractor 0 FIRE_SPR 0 FIRE_SPAWN
         action FIRE_BURN
     }
     ifaction FIRE_BURN {
+
+        // Time stops for you I guess
+        ifn INGAMEMENU 0 {
+            return
+        }
 
         var APLAYER
         set APLAYER 0
@@ -425,3 +469,5 @@ useractor 0 KEEPER_SPR 0 KEEPER_SPAWN
         quote 669
     }
 enda
+
+
