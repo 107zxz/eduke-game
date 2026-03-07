@@ -6,6 +6,7 @@ var CURSOR_X
 var CURSOR_Y
 
 var FIRE_ACTOR
+var KEEPER_ACTOR
 
 var MOOLAH
 
@@ -181,10 +182,10 @@ defstate gameClick
     var HITZ
     var MY_ANGLE
 
-	set MY_ANGLE cameraang
-	getplayer[THISACTOR].horiz MY_ZDIST
-	subvar MY_ZDIST 100
-	mulvar MY_ZDIST -2048
+    set MY_ANGLE cameraang
+    getplayer[THISACTOR].horiz MY_ZDIST
+    subvar MY_ZDIST 100
+    mulvar MY_ZDIST -2048
 
     // Offset the angle by crosshair positioning
     var ANGLE_OFFSET 0
@@ -277,7 +278,7 @@ onevent EVENT_DISPLAYSBAR
     xor PLAYER_X 0xFFFFFFFF
     add PLAYER_X 320
     shiftvarr PLAYER_X 8
-    rotatesprite PLAYER_X 180 65536 1024 1446 0 0 FIREORI 0 0 xdim ydim
+    rotatesprite PLAYER_X 190 32768 1024 1446 0 0 FIREORI 0 0 xdim ydim
 
     var FIRE_SPR
     set FIRE_SPR 2310
@@ -292,7 +293,14 @@ onevent EVENT_DISPLAYSBAR
     xor FIRE_X 0xFFFFFFFF
     add FIRE_X 320
     shiftvarr FIRE_X 8
-    rotatesprite FIRE_X 200 65536 1024 FIRE_SPR 0 0 FIREORI 0 0 xdim ydim
+    rotatesprite FIRE_X 200 32768 1024 FIRE_SPR 0 0 FIREORI 0 0 xdim ydim
+
+    var KEEPER_X
+    geta[KEEPER_ACTOR].y KEEPER_X
+    xor KEEPER_X 0xFFFFFFFF
+    add KEEPER_X 320
+    shiftvarr KEEPER_X 8
+    rotatesprite 320 200 32768 1024 2000 0 0 FIREORI 0 0 xdim ydim
 
     var FIRE_DIST
     set FIRE_DIST PLAYER_X
@@ -401,5 +409,19 @@ useractor 0 FIRE_SPR 0 FIRE_SPAWN
         ifpdistl 800 {
             addphealth -200
         }
+    }
+enda
+
+action KEEPER_SPAWN 0 1 1 0 3
+action KEEPER_STAND 0 1 1 0 3
+define KEEPER_SPR 2000
+useractor 0 KEEPER_SPR 0 KEEPER_SPAWN
+    ifaction KEEPER_SPAWN {
+        set KEEPER_ACTOR THISACTOR
+        action KEEPER_STAND
+    }
+    ifhitspace {
+        redefinequote 669 That's not enough. no entry!
+        quote 669
     }
 enda
