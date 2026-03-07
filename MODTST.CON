@@ -252,9 +252,6 @@ endevent
 
 // Custom HUD
 onevent EVENT_DISPLAYSBAR
-    redefinequote 666 Chairs: %d/30
-    qsprintf 666 666 MOOLAH
-
     var TXTORI
     set TXTORI 0
     or TXTORI 2
@@ -267,7 +264,10 @@ onevent EVENT_DISPLAYSBAR
     // and TXTFLG 262144
 
     // gametext 2822 0 192 666 0 0 26 0 0 xdim ydim
-    screentext 2822 320 16 65536 0 0 666 0 0 TXTORI 0 5 8 0 0 TXTFLG 0 0 xdim ydim
+    redefinequote 666 Chairs: %d/30
+    qsprintf 666 666 MOOLAH
+
+    screentext 2822 320 16 32768 0 0 666 0 0 TXTORI 0 5 8 0 0 TXTFLG 0 0 xdim ydim
 
     // Fire progress
     var FIREORI 6
