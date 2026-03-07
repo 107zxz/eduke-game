@@ -5,15 +5,18 @@ var SCR_W_HALF 10485760
 var CURSOR_X
 var CURSOR_Y
 
-var MOOLAH 0
-
 var FIRE_ACTOR
+
+var MOOLAH
 
 appendevent EVENT_ENTERLEVEL
     set CURSOR_X SCR_W
     set CURSOR_Y SCR_H
     div CURSOR_X 2
     div CURSOR_Y 2
+
+    // Reset money counter
+    set MOOLAH 0
 
     // Fix camera pos, siigh
     setp[].over_shoulder_on 1
@@ -66,7 +69,7 @@ useractor 0 GRABBYHAND 0 HAND_SPAWN
         var GRABTARGET
 
         geta[].hitag GRABTARGET
-        
+
         geta[GRABTARGET].x DELTA_X
         geta[GRABTARGET].y DELTA_Y
         geta[].x MY_X
@@ -79,7 +82,7 @@ useractor 0 GRABBYHAND 0 HAND_SPAWN
 
         // shiftvarr DELTA_X 1
         // shiftvarr DELTA_Y 1
-        
+
         movesprite THISACTOR DELTA_X DELTA_Y 0 0 RETURN
 
         var DELTA_DIST
@@ -121,7 +124,7 @@ useractor 0 GRABBYHAND 0 HAND_SPAWN
         geta[GRABTARGET].picnum GRABPIC
 
         // Special case: If it's a switch we *REALLY* don't want to pull it back
-        
+
         getp[].posx DELTA_X
         getp[].posy DELTA_Y
         geta[].x MY_X
@@ -154,7 +157,7 @@ useractor 0 GRABBYHAND 0 HAND_SPAWN
 
                     money 5
                 }
-                
+
                 killit
             }
         }
@@ -201,7 +204,7 @@ defstate gameClick
 
 	cos MY_COS MY_ANGLE
 	sin MY_SIN MY_ANGLE
-    
+
     // This is useful for detecting items directly. Consider for only grabbing valid stuff
     hitscan camerax cameray cameraz camerasect MY_COS MY_SIN MY_ZDIST HITSECTOR HITWALL HITSPRITE HITX HITY HITZ 4294901808
     ifn HITSPRITE -1 {
@@ -233,7 +236,7 @@ endevent
 var JUSTCLICKED
 appendevent EVENT_PROCESSINPUT
     var INP
-    geti[].bits INP 
+    geti[].bits INP
     ifand INP 4 {
         ife JUSTCLICKED 0 {
             set JUSTCLICKED 1
@@ -267,7 +270,7 @@ onevent EVENT_DISPLAYSBAR
 
     // Fire progress
     var FIREORI 6
- 
+
     // Player progress
     var PLAYER_X
     getp[].posy PLAYER_X
@@ -290,6 +293,18 @@ onevent EVENT_DISPLAYSBAR
     add FIRE_X 320
     shiftvarr FIRE_X 8
     rotatesprite FIRE_X 200 65536 1024 FIRE_SPR 0 0 FIREORI 0 0 xdim ydim
+
+    var FIRE_DIST
+    set FIRE_DIST PLAYER_X
+    sub FIRE_DIST FIRE_X
+
+    clamp FIRE_DIST 0 32
+    xor FIRE_DIST 0xFFFFFFFF
+    add FIRE_DIST 33
+
+    setp[].pals_time FIRE_DIST
+    setp[].pals 0 63
+    setp[].pals 1 15
 
     set RETURN -1
 endevent
@@ -330,7 +345,7 @@ onevent EVENT_JUMP
     set RETURN -1
 endevent
 
-// action <name> <startframe> <frames> <viewtype> <incvalue> <delay> 
+// action <name> <startframe> <frames> <viewtype> <incvalue> <delay>
 action FIRE_SPAWN 0 1 1 0 3
 action FIRE_BURN 0 13 1 1 3
 define FIRE_SPR 2310
@@ -341,7 +356,7 @@ useractor 0 FIRE_SPR 0 FIRE_SPAWN
         sizeat 255 150
         seta[].yoffset 1750
         seta[].alpha 128
-        
+
         set FIRE_ACTOR THISACTOR
         action FIRE_BURN
     }
@@ -352,12 +367,14 @@ useractor 0 FIRE_SPR 0 FIRE_SPAWN
 
         var PX
         var PY
+        var PZ
 
         var CX
         var CY
 
         getp[APLAYER].posx PX
         getp[APLAYER].posy PY
+        getp[APLAYER].posz PZ
 
         geta[].x CX
         geta[].y CY
@@ -377,6 +394,8 @@ useractor 0 FIRE_SPR 0 FIRE_SPAWN
             set CY PY
 
         seta[].y CY
+
+        seta[].z PZ
 
         // Burn the playa
         ifpdistl 800 {
