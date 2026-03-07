@@ -3,3 +3,4 @@
 *.log
 autosave*
 Makefile
+.DS_Store
