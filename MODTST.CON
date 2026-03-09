@@ -1,14 +1,29 @@
+// Define levels
+undefinevolume 0
+undefinevolume 1
+undefinevolume 2
+
+definelevelname 0 0 newboard.map 01:00 01:00 GROUND FLOOR
+definelevelname 0 1 newboard.map 01:00 01:00 FLOOR 1
+
+undefineskill 0
+undefineskill 1
+undefineskill 2
+undefineskill 3
+undefineskill 4
+
 var SCR_W 20971520
 var SCR_H 13107200
 
 var SCR_W_HALF 10485760
+var SCR_H_HALF 6553600
 var CURSOR_X
 var CURSOR_Y
 
 var FIRE_ACTOR
 var KEEPER_ACTOR
 
-var MOOLAH
+var MOOLAH 0
 
 // Custom menu system
 // 0 -> No menu
@@ -22,11 +37,14 @@ appendevent EVENT_ENTERLEVEL
     div CURSOR_Y 2
 
     // Reset money counter
-    set MOOLAH 0
+    // set MOOLAH 0
 
     // Fix camera pos, siigh
     setp[].over_shoulder_on 1
+
     set cameraclock 0
+
+    set INGAMEMENU 0
 endevent
 
 
@@ -157,9 +175,7 @@ useractor 0 GRABBYHAND 0 HAND_SPAWN
                 }
 
                 ife GRABPIC 556 {
-                    add MOOLAH 1
-                    redefinequote 667 Stole chair!
-                    userquote 667
+                    add MOOLAH 30
 
                     money 5
                 }
@@ -171,7 +187,9 @@ useractor 0 GRABBYHAND 0 HAND_SPAWN
 enda
 
 defstate menuClick
+        set INGAMEMENU 0
 
+        startlevel 0 1
 ends
 
 defstate gameClick
@@ -262,18 +280,78 @@ appendevent EVENT_PROCESSINPUT
     else
         ife JUSTCLICKED 1
             set JUSTCLICKED 0
+
+    // Don't move in menus!
+    ifn INGAMEMENU 0 {
+        seti[].fvel 0
+        seti[].svel 0
+    }
 endevent
 
 state screenmenu
-    ife INGAMEMENU 0
-        terminate
+    var PANEL_H
+    set PANEL_H ydim
+    shiftvarr PANEL_H 1
 
-    // rotatesprite <x> <y> <zoom> <ang> <tilenum> <shade> <pal> <orientation> <x1> <y1> <x2> <y2>
-    rotatesprite 0 0 65536 0 2456 0 0 1040 0 0 xdim ydim
+    var PANEL_A_ALPHA 0
+    var PANEL_B_ALPHA 0
+    set PANEL_A_ALPHA 0
+    set PANEL_B_ALPHA 0
+
+    ifl CURSOR_Y SCR_H_HALF {
+        set PANEL_A_ALPHA 127
+    } else {
+        set PANEL_B_ALPHA 127
+    }
+
+    // rotatespritea <x> <y> <zoom> <ang> <tilenum> <shade> <pal> <orientation> <alpha> <x1> <y1> <x2> <y2>
+    rotatespritea 0 50 65536 0 2456 0 7 1040 PANEL_B_ALPHA 0 0 xdim PANEL_H
+    // rotatespritea 0 100 65536 0 2456 0 7 1040 PANEL_A_ALPHA 0 0 xdim ydim
+
+    definequote 670 floor 2    cost 20    flame speed up
+    definequote 671 floor 3    cost 40    flame speed up
+
+    var TEXTFLAGS 0
+    set TEXTFLAGS 0
+    add TEXTFLAGS 2
+    add TEXTFLAGS 8
+    add TEXTFLAGS 2097152
+    add TEXTFLAGS 8192
+
+    // screentext <tilenum> <x> <y> <zoom> <block angle> <character angle> <quote> <shade> <pal> <orientation> <alpha> <xspace> <yline> <xbetween> <ybetween> <text flags> <x1> <y1> <x2> <y2>
+    screentext 2966 160 50 65536 0 0 670 0 0 18 PANEL_B_ALPHA 5 16 0 0 TEXTFLAGS 0 0 xdim ydim
+    // screentext 2966 160 150 65536 0 0 671 0 0 18 PANEL_A_ALPHA 5 16 0 0 TEXTFLAGS 0 0 xdim ydim
+
+    // Where to?
+    definequote 672 where to?
+    set TEXTFLAGS 0
+    add TEXTFLAGS 2 // Center X
+    add TEXTFLAGS 8 // Center Y
+    add TEXTFLAGS 8192 // Force Uppercase
+    add TEXTFLAGS 1048576 // Bigalphanum
+    screentext 2940 160 100 65536 0 0 672 0 0 18 0 5 16 0 0 TEXTFLAGS 0 0 xdim ydim
+
+    // Riches
+    redefinequote 673 You have: %d
+    qsprintf 673 673 MOOLAH
+    set TEXTFLAGS 0
+    add TEXTFLAGS 2 // Center X
+    //add TEXTFLAGS 4 // Y Bottom
+    add TEXTFLAGS 8192 // Force Uppercase
+    add TEXTFLAGS 1048576 // Bigalphanum
+    screentext 2940 160 5 65536 0 0 673 0 0 18 0 5 16 0 0 TEXTFLAGS 0 0 xdim ydim
+
 ends
 
 // Custom HUD
 onevent EVENT_DISPLAYSBAR
+    // Menu screen doesn't care
+    ifn INGAMEMENU 0 {
+        state screenmenu
+        set RETURN -1
+        return
+    }
+
     var TXTORI
     set TXTORI 0
     or TXTORI 2
@@ -286,10 +364,11 @@ onevent EVENT_DISPLAYSBAR
     // and TXTFLG 262144
 
     // gametext 2822 0 192 666 0 0 26 0 0 xdim ydim
-    redefinequote 666 Chairs: %d/30
+    redefinequote 666 Loot: $%d
     qsprintf 666 666 MOOLAH
+    screentext 2822 320 16 65536 0 0 666 0 0 TXTORI 0 5 8 0 0 TXTFLG 0 0 xdim ydim
 
-    screentext 2822 320 16 32768 0 0 666 0 0 TXTORI 0 5 8 0 0 TXTFLG 0 0 xdim ydim
+    // Status update on stealing??
 
     // Fire progress
     var FIREORI 6
@@ -335,9 +414,6 @@ onevent EVENT_DISPLAYSBAR
     setp[].pals_time FIRE_DIST
     setp[].pals 0 63
     setp[].pals 1 15
-
-    // Custom menus! Shop etc
-    state screenmenu
 
     set RETURN -1
 endevent
@@ -469,5 +545,3 @@ useractor 0 KEEPER_SPR 0 KEEPER_SPAWN
         quote 669
     }
 enda
-
-
