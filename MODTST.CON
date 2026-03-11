@@ -4,7 +4,8 @@ undefinevolume 1
 undefinevolume 2
 
 definelevelname 0 0 newboard.map 01:00 01:00 GROUND FLOOR
-definelevelname 0 1 newboard.map 01:00 01:00 FLOOR 1
+definelevelname 0 1 newboard2.map 01:00 01:00 FLOOR 1
+definelevelname 0 2 newboard2.map 01:00 01:00 FLOOR 2
 
 undefineskill 0
 undefineskill 1
@@ -338,27 +339,31 @@ state screenmenu
     }
     
     // Special: Secret floor condition
-    ifl MOOLAH FLOOR_COST {
-        // Hide second option
-        set PANEL_A_ALPHA 255
-        set PANEL_B_ALPHA 0
-    }
+    // ifl MOOLAH FLOOR_COST {
+    //     // Hide second option
+    //     set PANEL_A_ALPHA 255
+    //     set PANEL_B_ALPHA 0
+    // }
 
     // rotatespritea <x> <y> <zoom> <ang> <tilenum> <shade> <pal> <orientation> <alpha> <x1> <y1> <x2> <y2>
     rotatespritea 0 50 65536 0 2456 0 7 1040 PANEL_B_ALPHA 0 0 xdim PANEL_H
     rotatespritea 0 100 65536 0 2456 0 7 1040 PANEL_A_ALPHA 0 0 xdim ydim
 
-    redefinequote 670 floor 2    cost %d    flame speed up
-    redefinequote 671 floor 3    cost %d    flame speed up
+    redefinequote 670 floor %d    cost %d    flame speed up
+    redefinequote 671 floor %d   cost %d    flame speed up
     
     // Special: Secret my floor
     ifl MOOLAH FLOOR_COST {
-        redefinequote 670 floor S2    cost 0    oh god the ooze
+        redefinequote 670 floor S%d    cost 0    oh god the ooze
+        redefinequote 671 floor %d    cost %d    flame speed up
     }
-
-    qsprintf 670 670 FLOOR_COST   
+    
+    add FLOORNUM 1
+    qsprintf 670 670 FLOORNUM FLOOR_COST
     mul FLOOR_COST 2
-    qsprintf 671 671 FLOOR_COST    
+    add FLOORNUM 1
+    qsprintf 671 671 FLOORNUM FLOOR_COST
+    sub FLOORNUM 2
 
     var TEXTFLAGS 0
     set TEXTFLAGS 0
