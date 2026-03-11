@@ -518,10 +518,6 @@ onevent EVENT_GAME
     }
 endevent
 
-onevent EVENT_JUMP
-    set RETURN -1
-endevent
-
 // action <name> <startframe> <frames> <viewtype> <incvalue> <delay>
 action FIRE_SPAWN 0 1 1 0 3
 action FIRE_BURN 0 13 1 1 3
