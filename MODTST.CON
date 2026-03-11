@@ -25,10 +25,18 @@ var KEEPER_ACTOR
 
 var MOOLAH 0
 
+var FLOORNUM 0
+
 // Custom menu system
 // 0 -> No menu
 // 1 -> Elevator Menu
-var INGAMEMENU 0
+var INGAMEMENU
+
+defstate getfloorcost
+    set RETURN FLOORNUM
+    add RETURN 1
+    mul RETURN 100
+ends
 
 appendevent EVENT_ENTERLEVEL
     set CURSOR_X SCR_W
@@ -186,10 +194,26 @@ useractor 0 GRABBYHAND 0 HAND_SPAWN
     }
 enda
 
-defstate menuClick
-        set INGAMEMENU 0
-
-        startlevel 0 1
+defstate menuClick 
+        var FLOORCOST
+        state getfloorcost
+        set FLOORCOST RETURN
+        mul FLOORCOST 2
+        
+        ifl CURSOR_Y SCR_H_HALF {
+            set INGAMEMENU 0
+            add FLOORNUM 1
+        
+            startlevel 0 FLOORNUM
+            sub MOOLAH 0
+        }
+        ifg CURSOR_Y SCR_H_HALF ifg MOOLAH FLOORCOST {
+            set INGAMEMENU 0
+            add FLOORNUM 2
+        
+            startlevel 0 FLOORNUM
+            sub MOOLAH FLOORCOST
+        }
 ends
 
 defstate gameClick
@@ -297,18 +321,44 @@ state screenmenu
     var PANEL_B_ALPHA 0
     set PANEL_A_ALPHA 127
     set PANEL_B_ALPHA 0
+    
+    // Important variation: If you can't afford the base floor cost, you go to the secret floor
+    var FLOOR_COST 0
+    state getfloorcost
+    set FLOOR_COST RETURN
+    
+    var SECOND_FLOOR_COST 0
+    set SECOND_FLOOR_COST FLOOR_COST
+    mul SECOND_FLOOR_COST 2
 
-    ifg CURSOR_Y SCR_H_HALF ifg MOOLAH 40 {
+    // Allow highlighting the second floor iff you can afford it
+    ifg CURSOR_Y SCR_H_HALF ifg MOOLAH SECOND_FLOOR_COST {
         set PANEL_B_ALPHA 127
         set PANEL_A_ALPHA 0
+    }
+    
+    // Special: Secret floor condition
+    ifl MOOLAH FLOOR_COST {
+        // Hide second option
+        set PANEL_A_ALPHA 255
+        set PANEL_B_ALPHA 0
     }
 
     // rotatespritea <x> <y> <zoom> <ang> <tilenum> <shade> <pal> <orientation> <alpha> <x1> <y1> <x2> <y2>
     rotatespritea 0 50 65536 0 2456 0 7 1040 PANEL_B_ALPHA 0 0 xdim PANEL_H
     rotatespritea 0 100 65536 0 2456 0 7 1040 PANEL_A_ALPHA 0 0 xdim ydim
 
-    definequote 670 floor 2    cost 20    flame speed up
-    definequote 671 floor 3    cost 40    flame speed up
+    redefinequote 670 floor 2    cost %d    flame speed up
+    redefinequote 671 floor 3    cost %d    flame speed up
+    
+    // Special: Secret my floor
+    ifl MOOLAH FLOOR_COST {
+        redefinequote 670 floor S2    cost 0    oh god the ooze
+    }
+
+    qsprintf 670 670 FLOOR_COST   
+    mul FLOOR_COST 2
+    qsprintf 671 671 FLOOR_COST    
 
     var TEXTFLAGS 0
     set TEXTFLAGS 0
