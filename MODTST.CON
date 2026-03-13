@@ -580,10 +580,10 @@ onevent EVENT_GAME
 
     getincangle TARGETANG PLANG TARGETANG
 
-    ifg TARGETANG 1
-      set TARGETANG 2
-    ifl TARGETANG -1
-      set TARGETANG -2
+    ifg TARGETANG 2
+      set TARGETANG 3
+    ifl TARGETANG -2
+      set TARGETANG -3
 
     add TARGETANG PLANG
 
