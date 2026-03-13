@@ -2,7 +2,7 @@ eduke-game ACME convenience commands :P
 
 // Make commands
 make
-make mapster
+make mapster-mac
 
 // Open the wiki
 https://wiki.eduke32.com/wiki/Main_Page

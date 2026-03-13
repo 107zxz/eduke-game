@@ -7,8 +7,8 @@ undefinevolume 1
 undefinevolume 2
 
 definelevelname 0 0 newboard.map 01:00 01:00 GROUND FLOOR
-definelevelname 0 1 newboard2.map 01:00 01:00 FLOOR 1
-definelevelname 0 2 newboard2.map 01:00 01:00 FLOOR 2
+definelevelname 0 1 newboard2.map 01:00 01:00 DUNGEON 1
+definelevelname 0 2 newboard2.map 01:00 01:00 FLOOR 1
 
 undefineskill 0
 undefineskill 1
@@ -44,22 +44,23 @@ ends
 // 1 -> Elevator Menu
 var INGAMEMENU
 
-defstate menuClick 
+defstate menuClick
   var FLOORCOST
-  state getfl  set FLOORCOST RETURN
+  state getfloorcost
+  set FLOORCOST RETURN
   mul FLOORCOST 2
-  
+
   ifl CURSOR_Y SCR_H_HALF {
     set INGAMEMENU 0
     add FLOORNUM 1
-  
+
     startlevel 0 FLOORNUM
     sub MOOLAH 0
   }
   ifg CURSOR_Y SCR_H_HALF ifg MOOLAH FLOORCOST {
     set INGAMEMENU 0
     add FLOORNUM 2
-  
+
     startlevel 0 FLOORNUM
     sub MOOLAH FLOORCOST
   }
@@ -74,12 +75,12 @@ state screenmenu
   var PANEL_B_ALPHA 0
   set PANEL_A_ALPHA 127
   set PANEL_B_ALPHA 0
-  
+
   // Important variation: If you can't afford the base floor cost, you go to the secret floor
   var FLOOR_COST 0
   state getfloorcost
   set FLOOR_COST RETURN
-  
+
   var SECOND_FLOOR_COST 0
   set SECOND_FLOOR_COST FLOOR_COST
   mul SECOND_FLOOR_COST 2
@@ -96,13 +97,13 @@ state screenmenu
 
   redefinequote 670 floor %d  cost %d  flame speed up
   redefinequote 671 floor %d   cost %d  flame speed up
-  
+
   // Special: Secret my floor
   ifl MOOLAH FLOOR_COST {
     redefinequote 670 floor S%d  cost 0  oh god the ooze
     redefinequote 671 floor %d  cost %d  flame speed up
   }
-  
+
   add FLOORNUM 1
   qsprintf 670 670 FLOORNUM FLOOR_COST
   mul FLOOR_COST 2
@@ -459,7 +460,7 @@ appendevent EVENT_PROCESSINPUT
   ifand INP 4 {
     ife JUSTCLICKED 0 {
       set JUSTCLICKED 1
-      ifn INGAMEMENU 0 
+      ifn INGAMEMENU 0
         state menuClick
       else
         state handClick
@@ -579,10 +580,10 @@ onevent EVENT_GAME
 
     getincangle TARGETANG PLANG TARGETANG
 
-    ifg TARGETANG
-      set TARGETANG 3
-    ifl TARGETANG -2
-      set TARGETANG -3
+    ifg TARGETANG 1
+      set TARGETANG 2
+    ifl TARGETANG -1
+      set TARGETANG -2
 
     add TARGETANG PLANG
 
