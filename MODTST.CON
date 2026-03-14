@@ -434,6 +434,9 @@ onevent EVENT_PREUPDATEANGLES
   geti[].q16avel DELTA_X
   geti[].q16horz DELTA_Y
 
+  // Temp
+  div DELTA_X 2
+
   add CURSOR_X DELTA_X
   sub CURSOR_Y DELTA_Y
 
@@ -452,6 +455,7 @@ endevent
 onevent EVENT_PRESSEDFIRE
   set RETURN -1
 endevent
+
 
 var JUSTCLICKED
 appendevent EVENT_PROCESSINPUT
@@ -563,6 +567,13 @@ onevent EVENT_GAME
   var APLAYER
   set APLAYER 0
 
+  var PSPRITE
+  getp[APLAYER].i PSPRITE
+
+  // We should REALLY be the player past here
+  ifn PSPRITE THISACTOR
+    terminate;
+
   var PSECT
   getp[APLAYER].cursectnum PSECT
 
@@ -580,10 +591,10 @@ onevent EVENT_GAME
 
     getincangle TARGETANG PLANG TARGETANG
 
-    ifg TARGETANG 2
-      set TARGETANG 3
-    ifl TARGETANG -2
-      set TARGETANG -3
+    ifg TARGETANG 100
+      set TARGETANG 100
+    ifl TARGETANG -100
+      set TARGETANG -100
 
     add TARGETANG PLANG
 
