@@ -263,6 +263,13 @@ useractor 0 GRABBYHAND 0 HAND_SPAWN
 enda
 
 defstate handClick
+  // Dear god don't let dead people do this
+  var PDEAD
+  getp[THISACTOR].dead_flag PDEAD
+
+  ifn PDEAD 0
+    terminate
+
   var MY_X
   var MY_Y
   var MY_Z
@@ -433,9 +440,6 @@ onevent EVENT_PREUPDATEANGLES
 
   geti[].q16avel DELTA_X
   geti[].q16horz DELTA_Y
-
-  // Temp
-  div DELTA_X 2
 
   add CURSOR_X DELTA_X
   sub CURSOR_Y DELTA_Y
