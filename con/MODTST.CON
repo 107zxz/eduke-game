@@ -6,9 +6,9 @@ undefinevolume 0
 undefinevolume 1
 undefinevolume 2
 
-definelevelname 0 0 newboard.map 01:00 01:00 GROUND FLOOR
-definelevelname 0 1 newboard2.map 01:00 01:00 DUNGEON 1
-definelevelname 0 2 newboard2.map 01:00 01:00 FLOOR 1
+definelevelname 0 0 maps/flr0.map 01:00 01:00 GROUND FLOOR
+definelevelname 0 1 maps/flr1.map 01:00 01:00 FLOOR 1
+definelevelname 0 2 maps/flr2.map 01:00 01:00 FLOOR 2
 
 undefineskill 0
 undefineskill 1
@@ -250,9 +250,14 @@ useractor 0 GRABBYHAND 0 HAND_SPAWN
           seta[GRABTARGET].xrepeat 0
         }
 
+        // Chair
         ife GRABPIC 556 {
           add MOOLAH 30
-
+          money 5
+        }
+        // Pipe
+        ife GRABPIC 1005 {
+          add MOOLAH 50
           money 5
         }
 
@@ -523,39 +528,56 @@ onevent EVENT_DISPLAYSBAR
   shiftvarr PLAYER_X 8
   rotatesprite PLAYER_X 190 32768 1024 1446 0 0 FIREORI 0 0 xdim ydim
 
-  var FIRE_SPR
-  set FIRE_SPR 2310
-  var CLK
-  set CLK cameraclock
-  shiftvarr CLK 2
-  mod CLK 9
-  add FIRE_SPR CLK
+  ifn FIRE_ACTOR 0 {
+    var FIRE_SPR
+    set FIRE_SPR 2310
+    var CLK
+    set CLK cameraclock
+    shiftvarr CLK 2
+    mod CLK 9
+    add FIRE_SPR CLK
 
-  var FIRE_X
-  geta[FIRE_ACTOR].y FIRE_X
-  xor FIRE_X 0xFFFFFFFF
-  add FIRE_X 320
-  shiftvarr FIRE_X 8
-  rotatesprite FIRE_X 200 32768 1024 FIRE_SPR 0 0 FIREORI 0 0 xdim ydim
+    var FIRE_X
+    geta[FIRE_ACTOR].y FIRE_X
+    xor FIRE_X 0xFFFFFFFF
+    add FIRE_X 320
+    shiftvarr FIRE_X 8
+    rotatesprite FIRE_X 200 32768 1024 FIRE_SPR 0 0 FIREORI 0 0 xdim ydim
 
-  var KEEPER_X
-  geta[KEEPER_ACTOR].y KEEPER_X
-  xor KEEPER_X 0xFFFFFFFF
-  add KEEPER_X 320
-  shiftvarr KEEPER_X 8
-  rotatesprite 320 200 32768 1024 2000 0 0 FIREORI 0 0 xdim ydim
+    // var KEEPER_X
+    // geta[KEEPER_ACTOR].y KEEPER_X
+    // xor KEEPER_X 0xFFFFFFFF
+    // add KEEPER_X 320
+    // shiftvarr KEEPER_X 8
+    // rotatesprite 320 200 32768 1024 2000 0 0 FIREORI 0 0 xdim ydim
 
-  var FIRE_DIST
-  set FIRE_DIST PLAYER_X
-  sub FIRE_DIST FIRE_X
+    var FIRE_DIST
+    set FIRE_DIST PLAYER_X
+    sub FIRE_DIST FIRE_X
 
-  clamp FIRE_DIST 0 32
-  xor FIRE_DIST 0xFFFFFFFF
-  add FIRE_DIST 33
+    clamp FIRE_DIST 0 32
+    xor FIRE_DIST 0xFFFFFFFF
+    add FIRE_DIST 33
 
-  setp[].pals_time FIRE_DIST
-  setp[].pals 0 63
-  setp[].pals 1 15
+    setp[].pals_time FIRE_DIST
+    setp[].pals 0 63
+    setp[].pals 1 15
+  }
+
+  // Elevator next level prompt
+  var PSECT
+  var SECLOW
+  getp .cursectnum PSECT
+  gets[PSECT].lotag SECLOW
+
+  ife SECLOW 33 {
+    set TXTFLG 0
+    or TXTFLG 2
+    or TXTFLG 4
+
+    definequote 671 Press E to go up! ($200)
+    screentext 2822 160 100 65536 0 0 671 0 0 TXTORI 0 5 8 0 0 TXTFLG 0 0 xdim ydim
+  }
 
   set RETURN -1
 endevent
@@ -607,8 +629,16 @@ onevent EVENT_GAME
 
   // End level elevator. Open the elevator screen and move the player (?)
   // Depends on if the screen is a level warp or not
+  // Note: Disabling this to replace with something less intrusive
   ife SECLOW 33 {
     // Opening the actual game menu is restricted for some ungodly reason, so let's fake it!
-    set INGAMEMENU 1
+    // set INGAMEMENU 1
+
+    // Go to next level!
+    ifg MOOLAH 200 ifhitspace {
+      sub MOOLAH 200
+      add FLOORNUM 1
+      startlevel 0 FLOORNUM
+    }
   }
 endevent

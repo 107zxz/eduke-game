@@ -16,3 +16,26 @@ git diff
 git pull
 git commit -am ""
 git push
+
+// Some plans
+- Main menu
+- Cutscene
+- Enter building
+- Tutorial floor
+- Another cutscene
+- Introduce fire
+- Floor 2
+- Another cutscene
+- Introduce enemies (allow stealing them)
+- Floor 3
+- Another cutscene
+- Boss fight
+
+// Additional mechanics needed
+- Cutscenes
+- Picking up and throwing??? (SCOPE CREEP)
+- Enemies
+- Something to spend money on other than elevators
+- Get rid of elevator menu for something simpler
+    - Tooltip that says something like "Go up? ($200)" and you press 'E' to do it
+- Split mechanics into files
