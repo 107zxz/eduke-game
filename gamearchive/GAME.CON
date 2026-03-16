@@ -1,0 +1,1197 @@
+////// da gaem. Finally Amy stars in her own adventure. //////
+include DEFS.CON
+include USER.CON
+
+////// GAME INIT SHIT //////
+define CAMERASDESTRUCTABLE      NO               // YES
+define FREEZERHURTOWNER         YES
+
+define MAXPLAYERHEALTH          100
+define MAXWATERFOUNTAINHEALTH    50
+
+define YELLHURTSOUNDSTRENGTH     40
+define YELLHURTSOUNDSTRENGTHMP   50
+
+define MAXPLAYERATOMICHEALTH    200     // doubles as maxarmor.
+define DOUBLEMAXPLAYERHEALTH    MAXPLAYERATOMICHEALTH
+define STARTARMORHEALTH         0
+define RETRIEVEDISTANCE         844
+define SQUISHABLEDISTANCE      1024 // For actors only!
+define DEFAULTVISIBILITY        512
+define FROZENQUICKKICKDIST      980
+
+define GENERICIMPACTDAMAGE      10
+define SWEARFREQUENCY           42
+
+define MAXPISTOLAMMO           200
+define MAXSHOTGUNAMMO           50
+define MAXCHAINGUNAMMO         200
+define MAXRPGAMMO               50
+define MAXHANDBOMBAMMO          50
+define MAXSHRINKERAMMO          50
+define MAXDEVISTATORAMMO        99
+define MAXFREEZEAMMO            99
+define MAXTRIPBOMBAMMO          10
+
+define RESPAWNACTORTIME         768
+define RESPAWNITEMTIME          768
+
+// The BLIMP has a high respawn time (any value smaller runs the risk
+// of spawning too many sprites, resulting in "Bog City")
+define BLIMPRESPAWNTIME 2048
+
+define NUMFREEZEBOUNCES          3  // 0 - 255
+
+
+define RUNNINGSPEED 53200
+
+define PLAYDEADTIME 120
+
+define SHRUNKCOUNT 270
+define SHRUNKDONECOUNT 304
+
+define FROZENDRIPTIME 90
+define THAWTIME 138
+
+
+// Various blast radius distances
+
+define RPGBLASTRADIUS           1780
+define PIPEBOMBRADIUS           2500
+define SHRINKERBLASTRADIUS      650
+define TRIPBOMBBLASTRADIUS      3880
+define MORTERBLASTRADIUS        2500
+define BOUNCEMINEBLASTRADIUS    2500
+define SEENINEBLASTRADIUS       2048
+
+gamestartup     DEFAULTVISIBILITY GENERICIMPACTDAMAGE MAXPLAYERHEALTH
+                STARTARMORHEALTH  RESPAWNACTORTIME RESPAWNITEMTIME RUNNINGSPEED
+                RPGBLASTRADIUS PIPEBOMBRADIUS SHRINKERBLASTRADIUS TRIPBOMBBLASTRADIUS
+                MORTERBLASTRADIUS BOUNCEMINEBLASTRADIUS SEENINEBLASTRADIUS
+                MAXPISTOLAMMO MAXSHOTGUNAMMO MAXCHAINGUNAMMO
+                MAXRPGAMMO MAXHANDBOMBAMMO MAXSHRINKERAMMO
+                MAXDEVISTATORAMMO MAXTRIPBOMBAMMO MAXFREEZEAMMO
+                CAMERASDESTRUCTABLE NUMFREEZEBOUNCES FREEZERHURTOWNER
+
+////// PLAYERCODESHIT ///////
+action PSTAND       0   1   5   1    1
+action PEXPLODE     106   5   1   1   10
+action PEXPLODEAD   113   1   1
+
+action PJPHOUVER    15   1   5   1
+action PWALK        20   4   5   1   16
+action PRUN         20   4   5   1   10
+action PWALKBACK    45   4   5  -1   16
+action PRUNBACK     45   4   5  -1   10
+action PJUMPING     50   4   5   1   30
+action PFALLING     65   1   5
+action PDUCKING     86   1   5
+action PCRAWLING    86   3   5   1   20
+action PAKICKING    40   2   5   1   25
+action PFLINTCHING  106  1   1   1   10
+action PTHROWNBACK  106  5   1   1   18
+action PFROZEN       20  1   5
+action PLYINGDEAD   113  1   1
+
+action PSWIMMINGGO   375   1   5   1   10
+action PSWIMMING     375   4   5   1   13
+action PSWIMMINGWAIT 395   1   5   1   13
+action PTREDWATER    395   2   5   1   17
+
+move PSTOPED
+
+state check_dead_thrown_back
+    ifdead
+    {
+        strength 0
+        action PTHROWNBACK
+    }
+ends
+
+state check_pstandard
+    ifp pwalking action PWALK
+    else ifp pkicking action PAKICKING
+    else ifp pwalkingback action PWALKBACK
+    else ifp prunning action PRUN
+    else ifp prunningback action PRUNBACK
+    else ifp pjumping
+        action PJUMPING
+    else ifp pducking action PDUCKING
+ends
+
+state random_wall_jibs
+    ifrnd 96 shoot BLOODSPLAT1
+    ifrnd 96 shoot BLOODSPLAT2
+    ifrnd 96 shoot BLOODSPLAT3
+    ifrnd 96 shoot BLOODSPLAT4
+    ifrnd 96 shoot BLOODSPLAT1
+ends
+
+state standard_jibs
+    guts JIBS2 1
+    guts JIBS3 2
+    guts JIBS4 3
+    guts JIBS5 2
+    guts JIBS6 3
+    ifrnd 4 { guts JIBS1 1 spawn BLOODPOOL }               // spine
+ends
+
+state standard_pjibs
+    guts JIBS1 1
+    guts JIBS3 2
+    guts JIBS4 1
+    guts JIBS5 1
+    guts JIBS6 2
+    guts DUKETORSO 1
+    guts DUKELEG 2
+    guts DUKEGUN 1
+    ifrnd 16 money 1
+ends
+
+move DUKENOTMOVING
+state handle_dead_dukes
+    fall
+    ifmove 0     // 1st time initializiation...
+    {
+        ifrnd 128 cstat 4
+        else cstat 0
+        move DUKENOTMOVING
+    }
+
+    ifsquished
+    {
+        sound SQUISHED
+        spawn OOZ
+        killit
+    }
+    else ifcount 1024 ifpdistg 4096 killit
+    else
+    {
+        strength 0
+        ifhitweapon ifwasweapon RADIUSEXPLOSION
+        {
+            state standard_jibs
+            killit
+        }
+    }
+ends
+
+action PLYINGFRAMES 0 1 0 1 1
+actor DUKELYINGDEAD 0 PLYINGFRAMES
+    state handle_dead_dukes
+enda
+
+actor APLAYER 100 PSTAND 0 0
+
+    ifaction 0 action PSTAND
+    ifdead
+    {
+        ifsquished palfrom 32 63 63 63
+        else fall
+
+        ifactioncount 7 { move 0 } else ifactioncount 6
+        {
+            ifmultiplayer { }
+            else
+            {
+                ifrnd 32 sound DUKE_KILLED5
+                else ifrnd 32 sound DUKE_KILLED3
+                else ifrnd 32 sound DUKE_KILLED1
+                else ifrnd 32 sound DUKE_KILLED2
+            }
+        }
+
+        ifaction PLYINGDEAD
+        {
+            ifactioncount 3 move PSTOPED
+            quote 13
+            ifhitspace
+            {
+                action PSTAND
+                spawn DUKELYINGDEAD
+                resetplayer
+            }
+            break
+        }
+        else ifaction PTHROWNBACK
+        {
+            ifactioncount 5
+            {
+                spawn BLOODPOOL
+                action PLYINGDEAD
+            }
+            else ifactioncount 1 move 0
+            break
+        }
+        else ifaction PFROZEN
+        {
+            cstat 257
+
+            palfrom 16 0 0 24
+
+            ifhitweapon
+            {
+                ifwasweapon FREEZEBLAST break
+                lotsofglass 60
+                ifrnd 84 spawn BLOODPOOL
+
+                getlastpal
+                sound GLASS_BREAKING
+                spawn ATOMICHEALTH
+                cstat 32768
+                action PLYINGDEAD
+                break
+            }
+
+            ifactioncount THAWTIME { getlastpal strength 1 move 0 action PSTAND }
+            else ifactioncount FROZENDRIPTIME { ifrnd 32 spawn WATERDRIP }
+
+            ifp pfacing   // assumes some other player
+                ifpdistl FROZENQUICKKICKDIST pkick
+
+            break
+        }
+        else ifaction PEXPLODEAD
+        {
+            quote 13
+            ifhitspace
+            {
+                action PSTAND
+                resetplayer
+            }
+            break
+        }
+        else ifaction PEXPLODE
+        {
+            ifactioncount 5
+            {
+                action PEXPLODEAD
+                spawn BLOODPOOL
+            }
+            break
+        }
+
+        else ifp pshrunk
+        {
+            state standard_pjibs
+            spawn BLOODPOOL
+
+            sound SQUISHED
+            sound DUKE_DEAD
+
+            cstat 32768                 // Hide the sprite
+
+            action PLYINGDEAD
+        }
+
+        else
+        {
+            ifinwater
+            {
+                action PLYINGDEAD
+                spawn WATERBUBBLE
+                spawn WATERBUBBLE
+            }
+            else
+            {
+                action PEXPLODE
+                state standard_pjibs
+                cstat 32768
+                sound SQUISHED
+                sound DUKE_DEAD
+            }
+        }
+        break
+    }
+
+    ifsquished
+    {
+        strength -1
+        sound SQUISHED
+        spawn OOZ
+        break
+    }
+
+    ifp ponsteroids
+    {
+        ifp pstanding { }
+        else spawn FRAMEEFFECT1
+    }
+
+    else ifhitweapon
+    {
+        ifdead { ifmultiplayer sound DUKE_KILLED4 }
+        else
+        {
+            ifmultiplayer
+            {
+                ifphealthl YELLHURTSOUNDSTRENGTHMP
+                {
+                    ifrnd 64 sound DUKE_LONGTERM_PAIN2
+                    else ifrnd 64 sound DUKE_LONGTERM_PAIN3
+                    else ifrnd 64 sound DUKE_LONGTERM_PAIN4
+                    else sound DUKE_DEAD
+                }
+                else
+                {
+                    ifrnd 64 sound DUKE_LONGTERM_PAIN5
+                    else ifrnd 64 sound DUKE_LONGTERM_PAIN6
+                    else ifrnd 64 sound DUKE_LONGTERM_PAIN7
+                    else sound DUKE_LONGTERM_PAIN8
+                }
+            }
+            else
+            {
+                ifphealthl YELLHURTSOUNDSTRENGTH
+                {
+                    ifrnd 74 sound DUKE_LONGTERM_PAIN2
+                    else ifrnd 8 sound DUKE_LONGTERM_PAIN3
+                    else sound DUKE_LONGTERM_PAIN4
+                }
+                ifrnd 128 sound DUKE_LONGTERM_PAIN
+            }
+        }
+        ifstrength TOUGH
+        {
+            ifp pstanding action PFLINTCHING
+        }
+
+        ifwasweapon RPG
+        {
+            ifrnd 32 spawn BLOOD
+            ifdead state standard_pjibs
+            palfrom 48 52
+            break
+        }
+        ifwasweapon RADIUSEXPLOSION
+        {
+            ifrnd 32 spawn BLOOD
+            ifdead state standard_pjibs
+            palfrom 48 52
+            break
+        }
+        ifwasweapon FIREEXT
+        {
+            ifrnd 32 spawn BLOOD
+            ifdead state standard_pjibs
+            palfrom 48 52
+            break
+        }
+
+        ifwasweapon SHOTSPARK1 palfrom 24 48
+        else ifwasweapon FREEZEBLAST
+        {
+            palfrom 48 0 0 48
+            ifdead { sound SOMETHINGFROZE spritepal 1 action PFROZEN break }
+        }
+        else ifwasweapon COOLEXPLOSION1 palfrom 48 48 0 48
+        else ifwasweapon KNEE palfrom 16 32
+        else ifwasweapon FIRELASER palfrom 32 32
+        state check_dead_thrown_back
+        state random_wall_jibs
+
+        break
+    }
+
+    ifaction PFLINTCHING
+    {
+        ifactioncount 2 action PSTAND
+        break
+    }
+
+    ifinwater
+    {
+        ifaction PTREDWATER
+        {
+            ifp pwalking prunning action PSWIMMINGGO
+        }
+        else ifp pstanding pwalkingback prunningback action PTREDWATER
+        else
+        {
+            ifaction PSWIMMING
+            {
+                ifrnd 4 spawn WATERBUBBLE
+                ifactioncount 4
+                    action PSWIMMINGWAIT
+            }
+            else ifaction PSWIMMINGWAIT
+            {
+                ifactioncount 2
+                    action PSWIMMINGGO
+            }
+            else ifaction PSWIMMINGGO
+            {
+                ifactioncount 2
+                    action PSWIMMING
+            }
+            else action PTREDWATER
+        }
+
+        ifrnd 4 spawn WATERBUBBLE // For effect
+
+        break
+    }
+    else ifp pjetpack
+    {
+        ifaction PJPHOUVER
+        {
+            ifactioncount 4
+                resetactioncount
+        }
+        else action PJPHOUVER
+        break
+    }
+    else
+    {
+        ifaction PTREDWATER action PSTAND
+        ifaction PSWIMMING action PSTAND
+        ifaction PSWIMMINGWAIT action PSTAND
+        ifaction PSWIMMINGGO action PSTAND
+        ifaction PJPHOUVER action PFALLING
+    }
+
+    ifaction PFALLING
+    {
+        ifp ponground
+            action PSTAND
+        else
+        {
+            ifp pfalling break
+            else state check_pstandard
+        }
+    }
+
+    ifaction PDUCKING
+    {
+        ifgapzl 48
+        {
+            ifp pwalking pwalkingback prunning prunningback action PCRAWLING
+        }
+        else ifp pducking
+        {
+            ifp pwalking pwalkingback prunning prunningback action PCRAWLING
+        }
+        else
+        {
+            ifp pstanding action PSTAND
+            else state check_pstandard
+        }
+    }
+
+    else ifaction PCRAWLING
+    {
+        ifgapzl 48
+        {
+            ifp pstanding action PCRAWLING
+        }
+        else ifp pducking
+        {
+            ifp pstanding action PDUCKING
+        }
+        else
+        {
+            ifp pstanding action PSTAND
+            else state check_pstandard
+        }
+    }
+    else ifgapzl 48 action PDUCKING
+
+    else ifaction PJUMPING
+    {
+        ifp ponground action PSTAND
+        else ifactioncount 4 ifp pfalling action PFALLING
+    }
+
+    ifp pfalling action PFALLING
+    else ifaction PSTAND state check_pstandard
+    else ifaction PAKICKING
+    {
+        ifactioncount 2 action PSTAND
+        break
+    }
+    else ifaction PWALK
+    {
+        ifp pfalling action PFALLING
+        else ifp pstanding action PSTAND
+        else ifp prunning action PRUN
+        else ifp pwalkingback action PWALKBACK
+        else ifp prunningback action PRUNBACK
+        else ifp pjumping
+            action PJUMPING
+        else ifp pducking action PDUCKING
+    }
+
+    else ifaction PRUN
+    {
+        ifp pstanding action PSTAND
+        else ifp pwalking action PWALK
+        else ifp pwalkingback action PWALKBACK
+        else ifp prunningback action PRUNBACK
+        else ifp pjumping
+            action PJUMPING
+        else ifp pducking action PDUCKING
+    }
+
+    else ifaction PWALKBACK
+    {
+        ifp pstanding action PSTAND
+        else ifp pwalking action PWALK
+        else ifp prunning action PRUN
+        else ifp prunningback action PRUNBACK
+        else ifp pjumping
+            action PJUMPING
+        else ifp pducking action PDUCKING
+    }
+
+    else ifaction PRUNBACK
+    {
+        ifp pstanding action PSTAND
+        else ifp pwalking action PWALK
+        else ifp prunning action PRUN
+        else ifp pwalkingback action PWALKBACK
+        else ifp pjumping
+            action PJUMPING
+        else ifp pducking action PDUCKING
+    }
+enda
+
+////// LEVEL SHIT //////
+undefinevolume 1
+undefinevolume 2
+
+definelevelname 0 0 flr0.map 01:00 01:00 GROUND FLOOR
+definelevelname 0 1 flr1.map 01:00 01:00 FLOOR 1
+definelevelname 0 2 flr2.map 01:00 01:00 FLOOR 2
+
+undefineskill 0
+undefineskill 1
+undefineskill 2
+undefineskill 3
+undefineskill 4
+
+////// SCREEN SHIT //////
+var SCR_W 20971520
+var SCR_H 13107200
+
+var SCR_W_HALF 10485760
+var SCR_H_HALF 6553600
+var CURSOR_X
+var CURSOR_Y
+
+////// GAMESTATE SHIT //////
+var FIRE_ACTOR
+var KEEPER_ACTOR
+
+var MOOLAH 0
+var FLOORNUM 0
+
+defstate getfloorcost
+  set RETURN FLOORNUM
+  add RETURN 1
+  mul RETURN 100
+ends
+
+
+////// MENU SHIT //////
+// 0 -> No menu
+// 1 -> Elevator Menu
+var INGAMEMENU
+
+defstate menuClick
+  var FLOORCOST
+  state getfloorcost
+  set FLOORCOST RETURN
+  mul FLOORCOST 2
+
+  ifl CURSOR_Y SCR_H_HALF {
+    set INGAMEMENU 0
+    add FLOORNUM 1
+
+    startlevel 0 FLOORNUM
+    sub MOOLAH 0
+  }
+  ifg CURSOR_Y SCR_H_HALF ifg MOOLAH FLOORCOST {
+    set INGAMEMENU 0
+    add FLOORNUM 2
+
+    startlevel 0 FLOORNUM
+    sub MOOLAH FLOORCOST
+  }
+ends
+
+state screenmenu
+  var PANEL_H
+  set PANEL_H ydim
+  shiftvarr PANEL_H 1
+
+  var PANEL_A_ALPHA 0
+  var PANEL_B_ALPHA 0
+  set PANEL_A_ALPHA 127
+  set PANEL_B_ALPHA 0
+
+  // Important variation: If you can't afford the base floor cost, you go to the secret floor
+  var FLOOR_COST 0
+  state getfloorcost
+  set FLOOR_COST RETURN
+
+  var SECOND_FLOOR_COST 0
+  set SECOND_FLOOR_COST FLOOR_COST
+  mul SECOND_FLOOR_COST 2
+
+  // Allow highlighting the second floor iff you can afford it
+  ifg CURSOR_Y SCR_H_HALF ifg MOOLAH SECOND_FLOOR_COST {
+    set PANEL_B_ALPHA 127
+    set PANEL_A_ALPHA 0
+  }
+
+  // rotatespritea <x> <y> <zoom> <ang> <tilenum> <shade> <pal> <orientation> <alpha> <x1> <y1> <x2> <y2>
+  rotatespritea 0 50 65536 0 2456 0 7 1040 PANEL_B_ALPHA 0 0 xdim PANEL_H
+  rotatespritea 0 100 65536 0 2456 0 7 1040 PANEL_A_ALPHA 0 0 xdim ydim
+
+  redefinequote 670 floor %d  cost %d  flame speed up
+  redefinequote 671 floor %d   cost %d  flame speed up
+
+  // Special: Secret my floor
+  ifl MOOLAH FLOOR_COST {
+    redefinequote 670 floor S%d  cost 0  oh god the ooze
+    redefinequote 671 floor %d  cost %d  flame speed up
+  }
+
+  add FLOORNUM 1
+  qsprintf 670 670 FLOORNUM FLOOR_COST
+  mul FLOOR_COST 2
+  add FLOORNUM 1
+  qsprintf 671 671 FLOORNUM FLOOR_COST
+  sub FLOORNUM 2
+
+  var TEXTFLAGS 0
+  set TEXTFLAGS 0
+  add TEXTFLAGS 2
+  add TEXTFLAGS 8
+  add TEXTFLAGS 2097152
+  add TEXTFLAGS 8192
+
+  // screentext <tilenum> <x> <y> <zoom> <block angle> <character angle> <quote> <shade> <pal> <orientation> <alpha> <xspace> <yline> <xbetween> <ybetween> <text flags> <x1> <y1> <x2> <y2>
+  screentext 2966 160 50 65536 0 0 670 0 0 18 PANEL_B_ALPHA 5 16 0 0 TEXTFLAGS 0 0 xdim ydim
+  screentext 2966 160 150 65536 0 0 671 0 0 18 PANEL_A_ALPHA 5 16 0 0 TEXTFLAGS 0 0 xdim ydim
+
+  // Where to?
+  definequote 672 where to?
+  set TEXTFLAGS 0
+  add TEXTFLAGS 2 // Center X
+  add TEXTFLAGS 8 // Center Y
+  add TEXTFLAGS 8192 // Force Uppercase
+  add TEXTFLAGS 1048576 // Bigalphanum
+  screentext 2940 160 100 65536 0 0 672 0 0 18 0 5 16 0 0 TEXTFLAGS 0 0 xdim ydim
+
+  // Riches
+  redefinequote 673 You have: $%d
+  qsprintf 673 673 MOOLAH
+  set TEXTFLAGS 0
+  add TEXTFLAGS 2 // Center X
+  //add TEXTFLAGS 4 // Y Bottom
+  add TEXTFLAGS 8192 // Force Uppercase
+  add TEXTFLAGS 1048576 // Bigalphanum
+  screentext 2940 160 5 65536 0 0 673 0 0 18 0 5 16 0 0 TEXTFLAGS 0 0 xdim ydim
+
+ends
+
+
+////// GRABBY HAND SHIT //////.
+
+// TODO: See if we can get a trail on this bad they/them
+
+action HAND_SPAWN 0 1 1 0 3
+action HAND_GRAHB 0 1 1 0 3
+action HAND_RETRC 0 1 1 0 3
+
+define GRABBYHAND 2564 // Temp sprite number
+useractor 0 GRABBYHAND 0 HAND_SPAWN
+  ifaction HAND_SPAWN {
+    // sound KICK_HIT
+
+    sizeat 30 30
+    action HAND_GRAHB
+  }
+  ifaction HAND_GRAHB {
+    var DELTA_X
+    var DELTA_Y
+    var MY_X
+    var MY_Y
+    var MY_ANGLE
+    var GRABTARGET
+
+    geta[].hitag GRABTARGET
+
+    geta[GRABTARGET].x DELTA_X
+    geta[GRABTARGET].y DELTA_Y
+    geta[].x MY_X
+    geta[].y MY_Y
+    sub DELTA_X MY_X
+    sub DELTA_Y MY_Y
+
+    var GRABPIC
+    geta[GRABTARGET].picnum GRABPIC
+
+    // shiftvarr DELTA_X 1
+    // shiftvarr DELTA_Y 1
+
+    movesprite THISACTOR DELTA_X DELTA_Y 0 0 RETURN
+
+    var DELTA_DIST
+    calchypotenuse DELTA_DIST DELTA_X DELTA_Y
+
+    ifl DELTA_DIST 250 {
+      // quote 9
+      ife GRABPIC 132 {
+        var SW_LOWER
+        geta[GRABTARGET].lotag SW_LOWER
+        seta[GRABTARGET].picnum 133
+        operateactivators SW_LOWER 0
+        // sound SWITCH_ON
+      }
+      ife GRABPIC 133 {
+        var SW_LOWER
+        geta[GRABTARGET].lotag SW_LOWER
+        seta[GRABTARGET].picnum 132
+        operateactivators SW_LOWER 0
+        // sound SWITCH_ON
+      }
+
+      action HAND_RETRC
+    }
+  }
+  ifaction HAND_RETRC {
+    var DELTA_X
+    var DELTA_Y
+    var MY_X
+    var MY_Y
+    var MY_ANGLE
+
+    var APLAYER
+    findplayer APLAYER
+
+    var GRABTARGET
+    var GRABPIC
+    geta[].hitag GRABTARGET
+    geta[GRABTARGET].picnum GRABPIC
+
+    // Special case: If it's a switch we *REALLY* don't want to pull it back
+
+    getp[].posx DELTA_X
+    getp[].posy DELTA_Y
+    geta[].x MY_X
+    geta[].y MY_Y
+    sub DELTA_X MY_X
+    sub DELTA_Y MY_Y
+
+    movesprite THISACTOR DELTA_X DELTA_Y 0 0 RETURN
+    // Move the target
+
+    ifn GRABPIC 132 ifn GRABPIC 133 {
+      seta[GRABTARGET].x MY_X
+      seta[GRABTARGET].y MY_Y
+    }
+
+
+    // Returned to player
+    ifl DELTA_X 500 ifg DELTA_X -500 {
+      ifl DELTA_Y 500 ifg DELTA_Y -500 {
+
+        ifn GRABPIC 132 ifn GRABPIC 133 {
+          changespritestat GRABTARGET 1
+          seta[GRABTARGET].xrepeat 0
+        }
+
+        // Chair
+        ife GRABPIC 556 {
+          add MOOLAH 30
+          money 5
+        }
+        // Pipe
+        ife GRABPIC 1005 {
+          add MOOLAH 50
+          money 5
+        }
+
+        killit
+      }
+    }
+  }
+enda
+
+defstate handClick
+  // Dear god don't let dead people do this
+  var PDEAD
+  getp[THISACTOR].dead_flag PDEAD
+
+  ifn PDEAD 0
+    terminate
+
+  var MY_X
+  var MY_Y
+  var MY_Z
+  var MY_SECTOR
+  var MY_COS
+  var MY_SIN
+  var MY_ZDIST
+  var HITSECTOR
+  var HITWALL
+  var HITSPRITE
+  var HITX
+  var HITY
+  var HITZ
+  var MY_ANGLE
+
+  set MY_ANGLE cameraang
+  getplayer[THISACTOR].horiz MY_ZDIST
+  subvar MY_ZDIST 100
+  mulvar MY_ZDIST -2048
+
+  // Offset the angle by crosshair positioning
+  var ANGLE_OFFSET 0
+  var FOV
+  getu[THISACTOR].fov FOV
+
+  // TODO: Shove in an arctan here (sigmoid function) to fix hitscan
+
+  set ANGLE_OFFSET CURSOR_X
+  sub ANGLE_OFFSET SCR_W_HALF
+  shiftvarr ANGLE_OFFSET 16
+
+  // Magic numbers, I got these on a calculator and they suck.
+  scalevar ANGLE_OFFSET ANGLE_OFFSET 80 50
+
+  add MY_ANGLE ANGLE_OFFSET
+
+	cos MY_COS MY_ANGLE
+	sin MY_SIN MY_ANGLE
+
+  // This is useful for detecting items directly. Consider for only grabbing valid stuff
+  hitscan camerax cameray cameraz camerasect MY_COS MY_SIN MY_ZDIST HITSECTOR HITWALL HITSPRITE HITX HITY HITZ 4294901808
+  ifn HITSPRITE -1 {
+    var PX
+    var PY
+    var DELTA_X
+    var DELTA_Y
+    geta[HITSPRITE].x DELTA_X
+    geta[HITSPRITE].y DELTA_Y
+    geta[].x PX
+    geta[].y PY
+
+    sub DELTA_X PX
+    sub DELTA_Y PY
+
+    getangle MY_ANGLE DELTA_X DELTA_Y
+
+    espawn GRABBYHAND
+    seta[RETURN].hitag HITSPRITE
+  }
+
+  set RETURN -1
+ends
+
+
+////// FIRE SHIT //////
+// action <name> <startframe> <frames> <viewtype> <incvalue> <delay>
+action FIRE_SPAWN 0 1 1 0 3
+action FIRE_BURN 0 13 1 1 3
+define FIRE_SPR 2310
+
+// useractor <type> <picnum> [strength] [action] [move] [moveflag 1] [...] [moveflag N]
+useractor 0 FIRE_SPR 0 FIRE_SPAWN
+  ifaction FIRE_SPAWN {
+    sizeat 255 150
+    seta[].yoffset 1750
+    seta[].alpha 128
+
+    set FIRE_ACTOR THISACTOR
+    action FIRE_BURN
+  }
+  ifaction FIRE_BURN {
+
+    // Time stops for you I guess
+    ifn INGAMEMENU 0 {
+      return
+    }
+
+    var APLAYER
+    set APLAYER 0
+
+    var PX
+    var PY
+    var PZ
+
+    var CX
+    var CY
+
+    getp[APLAYER].posx PX
+    getp[APLAYER].posy PY
+    getp[APLAYER].posz PZ
+
+    geta[].x CX
+    geta[].y CY
+
+    var TX
+
+    set TX PX
+    sub TX CX
+    div TX 5
+
+    add CX TX
+    seta[].x CX
+
+    ifl PY CY
+      sub CY 60
+    else
+      set CY PY
+
+    seta[].y CY
+    seta[].z PZ
+
+    // Burn the playa
+    ifpdistl 800 {
+      addphealth -200
+    }
+  }
+enda
+
+
+////// KEEPER SHIT //////
+action KEEPER_SPAWN 0 1 1 0 3
+action KEEPER_STAND 0 1 1 0 3
+define KEEPER_SPR 2000
+useractor 0 KEEPER_SPR 0 KEEPER_SPAWN
+  ifaction KEEPER_SPAWN {
+    set KEEPER_ACTOR THISACTOR
+    action KEEPER_STAND
+  }
+  ifhitspace {
+    redefinequote 669 That's not enough. no entry!
+    quote 669
+  }
+enda
+
+
+////// and finally... EVENT SHIT //////
+appendevent EVENT_ENTERLEVEL
+  set CURSOR_X SCR_W
+  set CURSOR_Y SCR_H
+  div CURSOR_X 2
+  div CURSOR_Y 2
+
+  // Reset money counter
+  // set MOOLAH 0
+
+  // Fix camera pos, siigh
+  setp[].over_shoulder_on 1
+
+  set cameraclock 0
+
+  set INGAMEMENU 0
+endevent
+
+
+onevent EVENT_PREUPDATEANGLES
+  var DELTA_X
+  var DELTA_Y
+
+  geti[].q16avel DELTA_X
+  geti[].q16horz DELTA_Y
+
+  add CURSOR_X DELTA_X
+  sub CURSOR_Y DELTA_Y
+
+  clamp CURSOR_X 0 SCR_W
+  clamp CURSOR_Y 0 SCR_H
+
+  seti[].q16horz 0
+  seti[].q16avel 0
+endevent
+
+onevent EVENT_DISPLAYCROSSHAIR
+  setu[].return 1 CURSOR_X
+  setu[].return 2 CURSOR_Y
+endevent
+
+onevent EVENT_PRESSEDFIRE
+  set RETURN -1
+endevent
+
+
+var JUSTCLICKED
+appendevent EVENT_PROCESSINPUT
+  var INP
+  geti[].bits INP
+  ifand INP 4 {
+    ife JUSTCLICKED 0 {
+      set JUSTCLICKED 1
+      ifn INGAMEMENU 0
+        state menuClick
+      else
+        state handClick
+    }
+  }
+  else
+    ife JUSTCLICKED 1
+      set JUSTCLICKED 0
+
+  // Don't move in menus!
+  ifn INGAMEMENU 0 {
+    seti[].fvel 0
+    seti[].svel 0
+  }
+endevent
+
+// Custom HUD
+onevent EVENT_DISPLAYSBAR
+  // Menu screen doesn't care
+  ifn INGAMEMENU 0 {
+    state screenmenu
+    set RETURN -1
+    return
+  }
+
+  var TXTORI
+  set TXTORI 0
+  or TXTORI 2
+  // and TXTORI 256
+
+  var TXTFLG
+  set TXTFLG 0
+  or TXTFLG 1
+  or TXTFLG 4
+  // and TXTFLG 262144
+
+  // gametext 2822 0 192 666 0 0 26 0 0 xdim ydim
+  redefinequote 666 Loot: $%d
+  qsprintf 666 666 MOOLAH
+  screentext 2822 320 16 65536 0 0 666 0 0 TXTORI 0 5 8 0 0 TXTFLG 0 0 xdim ydim
+
+  // Status update on stealing??
+
+  // Fire progress
+  var FIREORI 6
+
+  // Player progress
+  var PLAYER_X
+  getp[].posy PLAYER_X
+  xor PLAYER_X 0xFFFFFFFF
+  add PLAYER_X 320
+  shiftvarr PLAYER_X 8
+  rotatesprite PLAYER_X 190 32768 1024 1446 0 0 FIREORI 0 0 xdim ydim
+
+  ifn FIRE_ACTOR 0 {
+    var FIRE_SPR
+    set FIRE_SPR 2310
+    var CLK
+    set CLK cameraclock
+    shiftvarr CLK 2
+    mod CLK 9
+    add FIRE_SPR CLK
+
+    var FIRE_X
+    geta[FIRE_ACTOR].y FIRE_X
+    xor FIRE_X 0xFFFFFFFF
+    add FIRE_X 320
+    shiftvarr FIRE_X 8
+    rotatesprite FIRE_X 200 32768 1024 FIRE_SPR 0 0 FIREORI 0 0 xdim ydim
+
+    // var KEEPER_X
+    // geta[KEEPER_ACTOR].y KEEPER_X
+    // xor KEEPER_X 0xFFFFFFFF
+    // add KEEPER_X 320
+    // shiftvarr KEEPER_X 8
+    // rotatesprite 320 200 32768 1024 2000 0 0 FIREORI 0 0 xdim ydim
+
+    var FIRE_DIST
+    set FIRE_DIST PLAYER_X
+    sub FIRE_DIST FIRE_X
+
+    clamp FIRE_DIST 0 32
+    xor FIRE_DIST 0xFFFFFFFF
+    add FIRE_DIST 33
+
+    setp[].pals_time FIRE_DIST
+    setp[].pals 0 63
+    setp[].pals 1 15
+  }
+
+  // Elevator next level prompt
+  var PSECT
+  var SECLOW
+  getp .cursectnum PSECT
+  gets[PSECT].lotag SECLOW
+
+  ife SECLOW 33 {
+    set TXTFLG 0
+    or TXTFLG 2
+    or TXTFLG 4
+
+    definequote 671 Press E to go up! ($200)
+    screentext 2822 160 100 65536 0 0 671 0 0 TXTORI 0 5 8 0 0 TXTFLG 0 0 xdim ydim
+  }
+
+  set RETURN -1
+endevent
+
+// Floor based camera angle setting
+onevent EVENT_GAME
+
+  // Atm everything here can pause while we're in a menu
+  ifn INGAMEMENU 0 {
+    terminate
+  }
+
+  var APLAYER
+  set APLAYER 0
+
+  var PSPRITE
+  getp[APLAYER].i PSPRITE
+
+  // We should REALLY be the player past here
+  ifn PSPRITE THISACTOR
+    terminate;
+
+  var PSECT
+  getp[APLAYER].cursectnum PSECT
+
+  var SECLOW
+  var SECHI
+  gets[PSECT].lotag SECLOW
+  gets[PSECT].hitag SECHI
+
+  // Camera turn sector, HITAG is angle
+  ife SECLOW 32 {
+    var TARGETANG
+    var PLANG
+    set TARGETANG SECHI
+    getp[APLAYER].ang PLANG
+
+    getincangle TARGETANG PLANG TARGETANG
+
+    ifg TARGETANG 100
+      set TARGETANG 100
+    ifl TARGETANG -100
+      set TARGETANG -100
+
+    add TARGETANG PLANG
+
+    setp[APLAYER].ang TARGETANG
+  }
+
+  // End level elevator. Open the elevator screen and move the player (?)
+  // Depends on if the screen is a level warp or not
+  // Note: Disabling this to replace with something less intrusive
+  ife SECLOW 33 {
+    // Opening the actual game menu is restricted for some ungodly reason, so let's fake it!
+    // set INGAMEMENU 1
+
+    // Go to next level!
+    ifg MOOLAH 200 ifhitspace {
+      sub MOOLAH 200
+      add FLOORNUM 1
+      startlevel 0 FLOORNUM
+    }
+  }
+endevent
