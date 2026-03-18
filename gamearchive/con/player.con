@@ -107,6 +107,7 @@ actor DUKELYINGDEAD 0 PLYINGFRAMES
 enda
 
 actor APLAYER 100 PSTAND 0 0
+    cstat 0
 
     ifaction 0 action PSTAND
     ifdead

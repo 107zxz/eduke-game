@@ -228,7 +228,6 @@ define GRABBYHAND 2564 // Temp sprite number
 useractor 0 GRABBYHAND 0 HAND_SPAWN
   ifaction HAND_SPAWN {
     // sound KICK_HIT
-
     sizeat 30 30
     action HAND_GRAHB
   }
@@ -363,7 +362,7 @@ defstate handClick
   var MY_ANGLE
 
   set MY_ANGLE cameraang
-  getplayer[THISACTOR].horiz MY_ZDIST
+  getp[THISACTOR].horiz MY_ZDIST
   subvar MY_ZDIST 100
   mulvar MY_ZDIST -2048
 
@@ -386,25 +385,33 @@ defstate handClick
 	cos MY_COS MY_ANGLE
 	sin MY_SIN MY_ANGLE
 
-  // This is useful for detecting items directly. Consider for only grabbing valid stuff
-  hitscan camerax cameray cameraz camerasect MY_COS MY_SIN MY_ZDIST HITSECTOR HITWALL HITSPRITE HITX HITY HITZ 4294901808
-  ifn HITSPRITE -1 {
-    var PX
-    var PY
-    var DELTA_X
-    var DELTA_Y
-    geta[HITSPRITE].x DELTA_X
-    geta[HITSPRITE].y DELTA_Y
-    geta[].x PX
-    geta[].y PY
+  var PZ
+  getp[THISACTOR].posz PZ
 
-    sub DELTA_X PX
-    sub DELTA_Y PY
+  whilevarn PZ 4000 {
+    // This is useful for detecting items directly. Consider for only grabbing valid stuff
+    hitscan camerax cameray PZ camerasect MY_COS MY_SIN MY_ZDIST HITSECTOR HITWALL HITSPRITE HITX HITY HITZ 4294901808
+    ifn HITSPRITE -1 {
+      var PX
+      var PY
+      var DELTA_X
+      var DELTA_Y
+      geta[HITSPRITE].x DELTA_X
+      geta[HITSPRITE].y DELTA_Y
+      geta[].x PX
+      geta[].y PY
 
-    getangle MY_ANGLE DELTA_X DELTA_Y
+      sub DELTA_X PX
+      sub DELTA_Y PY
 
-    espawn GRABBYHAND
-    seta[RETURN].hitag HITSPRITE
+      getangle MY_ANGLE DELTA_X DELTA_Y
+
+      espawn GRABBYHAND
+      seta[RETURN].hitag HITSPRITE
+
+      set PZ 3000
+    }
+    add PZ 1000
   }
 
   set RETURN -1
