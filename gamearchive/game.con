@@ -101,7 +101,7 @@ var CURSOR_Y
 var FIRE_ACTOR
 var KEEPER_ACTOR
 
-var MOOLAH 0
+var MOOLAH 9990
 var FLOORNUM 0
 
 defstate getfloorcost
@@ -388,7 +388,7 @@ defstate handClick
   var PZ
   getp[THISACTOR].posz PZ
 
-  whilevarn PZ 4000 {
+  whilevarl PZ 4000 {
     // This is useful for detecting items directly. Consider for only grabbing valid stuff
     hitscan camerax cameray PZ camerasect MY_COS MY_SIN MY_ZDIST HITSECTOR HITWALL HITSPRITE HITX HITY HITZ 4294901808
     ifn HITSPRITE -1 {
@@ -406,10 +406,15 @@ defstate handClick
 
       getangle MY_ANGLE DELTA_X DELTA_Y
 
+      // Make the target non-colliding if its not a switch
+      var GRABPIC
+      geta[HITSPRITE].picnum GRABPIC
+      ifn GRABPIC 132 ifn GRABPIC 133
+        seta[HITSPRITE].cstat 0
+
       espawn GRABBYHAND
       seta[RETURN].hitag HITSPRITE
-
-      set PZ 3000
+      exit
     }
     add PZ 1000
   }
@@ -499,6 +504,15 @@ useractor 0 KEEPER_SPR 0 KEEPER_SPAWN
 enda
 
 
+////// STEROID / SANDWICH SHIT //////
+useractor 0 2469
+  ifpdistl RETRIEVEDISTANCE {
+    
+    addinventory 0 100
+    killit
+  }
+enda
+
 ////// and finally... EVENT SHIT //////
 appendevent EVENT_ENTERLEVEL
   set CURSOR_X SCR_W
@@ -513,6 +527,8 @@ appendevent EVENT_ENTERLEVEL
   setp[].over_shoulder_on 1
 
   set cameraclock 0
+
+  set FIRE_ACTOR 0
 
   set INGAMEMENU 0
 endevent

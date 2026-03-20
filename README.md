@@ -2,7 +2,7 @@ eduke-game ACME convenience commands :P
 
 // Make commands
 make
-make mapster-mac
+make mapster
 
 // Open the wiki
 https://wiki.eduke32.com/wiki/Main_Page
@@ -36,6 +36,4 @@ git push
 - Picking up and throwing??? (SCOPE CREEP)
 - Enemies
 - Something to spend money on other than elevators
-- Get rid of elevator menu for something simpler
-    - Tooltip that says something like "Go up? ($200)" and you press 'E' to do it
 - Split mechanics into files

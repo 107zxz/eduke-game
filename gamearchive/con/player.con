@@ -35,7 +35,6 @@ ends
 
 state check_pstandard
     ifp pwalking action PWALK
-    else ifp pkicking action PAKICKING
     else ifp pwalkingback action PWALKBACK
     else ifp prunning action PRUN
     else ifp prunningback action PRUNBACK
@@ -240,6 +239,8 @@ actor APLAYER 100 PSTAND 0 0
 
     ifp ponsteroids
     {
+        // setu .god 1
+
         ifp pstanding { }
         else spawn FRAMEEFFECT1
     }
@@ -351,16 +352,6 @@ actor APLAYER 100 PSTAND 0 0
 
         ifrnd 4 spawn WATERBUBBLE // For effect
 
-        break
-    }
-    else ifp pjetpack
-    {
-        ifaction PJPHOUVER
-        {
-            ifactioncount 4
-                resetactioncount
-        }
-        else action PJPHOUVER
         break
     }
     else
