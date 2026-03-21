@@ -242,7 +242,10 @@ actor APLAYER 100 PSTAND 0 0
         // setu .god 1
 
         ifp pstanding { }
-        else spawn FRAMEEFFECT1
+        else {
+          ifand totalclock 5
+          spawn 2455
+        }
     }
 
     else ifhitweapon

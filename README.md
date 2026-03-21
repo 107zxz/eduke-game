@@ -1,8 +1,12 @@
 eduke-game ACME convenience commands :P
 
 // Make commands
-make
-make mapster
+◊make◊
+◊make mapster◊
+
+◊eduke32 -usecwd -j gamearchive -e1 -l1◊
+
+◊nix run nixpkgs#sladeUnstable◊
 
 // Open the wiki
 https://wiki.eduke32.com/wiki/Main_Page
@@ -11,11 +15,11 @@ https://wiki.eduke32.com/wiki/Main_Page
 https://voidpoint.io/terminx/eduke32
 
 // Git
-git status
-git diff
-git pull
-git commit -am ""
-git push
+◊git status◊
+◊git diff◊
+◊git pull◊
+◊git commit -am ""◊
+◊git push◊
 
 // Some plans
 - Main menu

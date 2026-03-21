@@ -110,6 +110,24 @@ defstate getfloorcost
   mul RETURN 100
 ends
 
+////// EXPLOSION SHIT //////
+action EXPLOSION_FRAMES 0 20 1 1 2
+useractor 0 EXPLOSION2 1 EXPLOSION_FRAMES
+  cstat 2050
+  sizeto 254 254
+  spritepal 21
+  fall
+ 
+  var PX
+  var PY
+  getp .posx PX
+  getp .posy PY
+  
+  seta .x PX
+  seta .y PY
+  
+  ifactioncount 20 killit
+enda
 
 ////// MENU SHIT //////
 // 0 -> No menu
@@ -250,9 +268,6 @@ useractor 0 GRABBYHAND 0 HAND_SPAWN
 
     var GRABPIC
     geta[GRABTARGET].picnum GRABPIC
-
-    // shiftvarr DELTA_X 1
-    // shiftvarr DELTA_Y 1
 
     movesprite THISACTOR DELTA_X DELTA_Y 0 0 RETURN
 
@@ -494,7 +509,7 @@ action KEEPER_STAND 0 1 1 0 3
 define KEEPER_SPR 2000
 useractor 0 KEEPER_SPR 0 KEEPER_SPAWN
   ifaction KEEPER_SPAWN {
-    set KEEPER_ACTOR THISACTOR
+    set KEEPER_ACTOR THISACTOR 
     action KEEPER_STAND
   }
   ifhitspace {
@@ -509,6 +524,12 @@ useractor 0 2469
   ifpdistl RETRIEVEDISTANCE {
     
     addinventory 0 100
+    spawn EXPLOSION2
+    quake 32
+    palfrom 32 0 64 64
+    
+    wackplayer
+    
     killit
   }
 enda
@@ -531,6 +552,26 @@ appendevent EVENT_ENTERLEVEL
   set FIRE_ACTOR 0
 
   set INGAMEMENU 0
+endevent
+
+action TRAIL_SPAWN -1046 1 1 0 6
+useractor 0 2455 0 TRAIL_SPAWN
+  ifaction TRAIL_SPAWN {
+  //sizeat 36 36
+  
+  var CURR_ALPHA
+  geta .alpha CURR_ALPHA
+  add CURR_ALPHA 3
+  seta .alpha CURR_ALPHA
+ 
+  ifg CURR_ALPHA 135 sizeat 36 36 
+  ifg CURR_ALPHA 250 killit
+  }
+enda
+appendevent EVENT_EGS
+  ifactor 2455 {
+    seta .alpha 128
+  }
 endevent
 
 
