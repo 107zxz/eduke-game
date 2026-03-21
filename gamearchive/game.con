@@ -533,6 +533,25 @@ useractor 0 2469
     killit
   }
 enda
+action TRAIL_SPAWN -1046 1 1 0 6
+useractor 0 2455 0 TRAIL_SPAWN
+  ifaction TRAIL_SPAWN {
+  //sizeat 36 36
+  
+  var CURR_ALPHA
+  geta .alpha CURR_ALPHA
+  add CURR_ALPHA 6
+  seta .alpha CURR_ALPHA
+ 
+  ifg CURR_ALPHA 135 sizeat 36 36 
+  ifg CURR_ALPHA 248 killit
+  }
+enda
+appendevent EVENT_EGS
+  ifactor 2455 {
+    seta .alpha 128
+  }
+endevent
 
 ////// and finally... EVENT SHIT //////
 appendevent EVENT_ENTERLEVEL
@@ -554,25 +573,7 @@ appendevent EVENT_ENTERLEVEL
   set INGAMEMENU 0
 endevent
 
-action TRAIL_SPAWN -1046 1 1 0 6
-useractor 0 2455 0 TRAIL_SPAWN
-  ifaction TRAIL_SPAWN {
-  //sizeat 36 36
-  
-  var CURR_ALPHA
-  geta .alpha CURR_ALPHA
-  add CURR_ALPHA 3
-  seta .alpha CURR_ALPHA
- 
-  ifg CURR_ALPHA 135 sizeat 36 36 
-  ifg CURR_ALPHA 250 killit
-  }
-enda
-appendevent EVENT_EGS
-  ifactor 2455 {
-    seta .alpha 128
-  }
-endevent
+
 
 
 onevent EVENT_PREUPDATEANGLES

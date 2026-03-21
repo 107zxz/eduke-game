@@ -18,7 +18,7 @@ https://voidpoint.io/terminx/eduke32
 ◊git status◊
 ◊git diff◊
 ◊git pull◊
-◊git commit -am ""◊
+◊git commit -am "Sandwich updates and player trail"◊
 ◊git push◊
 
 // Some plans

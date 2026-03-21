@@ -105,6 +105,10 @@ actor DUKELYINGDEAD 0 PLYINGFRAMES
     state handle_dead_dukes
 enda
 
+// New: Eating animation
+// TODO: Impl this
+action PEATSANDWICH    395   2   5   1   17
+
 actor APLAYER 100 PSTAND 0 0
     cstat 0
 
