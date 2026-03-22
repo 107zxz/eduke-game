@@ -44,7 +44,6 @@ define BLIMPRESPAWNTIME 2048
 
 define NUMFREEZEBOUNCES          3  // 0 - 255
 
-
 define RUNNINGSPEED 53200
 
 define PLAYDEADTIME 120
@@ -336,7 +335,9 @@ useractor 0 GRABBYHAND 0 HAND_SPAWN
 
         ifn GRABPIC 132 ifn GRABPIC 133 {
           changespritestat GRABTARGET 1
-          seta[GRABTARGET].xrepeat 0
+          // Special case for coffee, don't delete
+          ifn GRABPIC 2469
+            seta[GRABTARGET].xrepeat 0
         }
 
         // Chair
@@ -349,7 +350,7 @@ useractor 0 GRABBYHAND 0 HAND_SPAWN
           add MOOLAH 50
           money 5
         }
-
+        
         killit
       }
     }
@@ -408,7 +409,14 @@ defstate handClick
 
   whilevarl PZ 4000 {
     // This is useful for detecting items directly. Consider for only grabbing valid stuff
-    hitscan camerax cameray PZ camerasect MY_COS MY_SIN MY_ZDIST HITSECTOR HITWALL HITSPRITE HITX HITY HITZ 4294901808
+    
+    // Set up the clipmask
+    // clipmask=(sprite_cstat*65536)+wall_cstat
+    var CLIPMASK 0
+    set CLIPMASK 256
+    mul CLIPMASK 65536
+    
+    hitscan camerax cameray PZ camerasect MY_COS MY_SIN MY_ZDIST HITSECTOR HITWALL HITSPRITE HITX HITY HITZ CLIPMASK
     ifn HITSPRITE -1 {
       var PX
       var PY
@@ -418,6 +426,14 @@ defstate handClick
       geta[HITSPRITE].y DELTA_Y
       geta[].x PX
       geta[].y PY
+      
+      // CTAGS
+      var CTAGS
+      geta[HITSPRITE].cstat CTAGS
+      redefinequote 888 Ctags: %d
+      qsprintf 888 888 CTAGS
+      quote 888
+      echo 888
 
       sub DELTA_X PX
       sub DELTA_Y PY

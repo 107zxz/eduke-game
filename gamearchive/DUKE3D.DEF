@@ -1,72 +1,44 @@
+// Sandwich
+tilefromtexture 2469 {
+  file art/coffee.png
+}
+
+// Player Sprites
 tilefromtexture 1409 {
   file art/amy1.png
-  texture
-  truenpot
-  size 38 80
 }
 
 tilefromtexture 1429 {
   file art/amy1.png
-  texture
-  truenpot
-  size 38 80
 }
 
 tilefromtexture 1434 {
   file art/amy2.png
-  texture
-  truenpot
-  size 38 80
 }
 
 tilefromtexture 1439 {
   file art/amy3.png
-  texture
-  truenpot
-  size 38 80
 }
 
 tilefromtexture 1439 {
   file art/amy4.png
-  texture
-  truenpot
-  size 38 80
 }
 
 tilefromtexture 1444 {
   file art/amy2.png
-  texture
-  truenpot
-  size 38 80
 }
 
 // Jump up
 tilefromtexture 1459 {
   file art/amy2.png
-  texture
-  truenpot
-  size 38 80
 }
 
 // Jump land
 tilefromtexture 1464 {
   file art/amy2.png
-  texture
-  truenpot
-  size 38 80
 }
 
+// Jump land 2
 tilefromtexture 1469 {
   file art/amy1.png
-  texture
-  truenpot
-  size 38 80
 }
-
-// Candidate Sprites
-// 1409 -> Idle
-// 1424 -> Swim fwd
-// 1429 -> Run 1
-// 1434 -> Run 2
-// 1439 -> Run 3
-// 1444 -> Run 4

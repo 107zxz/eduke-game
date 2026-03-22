@@ -4,7 +4,8 @@ eduke-game ACME convenience commands :P
 ◊make◊
 ◊make mapster◊
 
-◊eduke32 -usecwd -j gamearchive -e1 -l1◊
+◊eduke32 -usecwd -j gamearchive -e1 -l3◊
+◊mapster32 -usecwd -j ./gamearchive/ -m gamearchive/maps/flr2.map◊
 
 ◊nix run nixpkgs#sladeUnstable◊
 
@@ -18,7 +19,7 @@ https://voidpoint.io/terminx/eduke32
 ◊git status◊
 ◊git diff◊
 ◊git pull◊
-◊git commit -am "Sandwich updates and player trail"◊
+◊git commit -am "Art update"◊
 ◊git push◊
 
 // Some plans
