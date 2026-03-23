@@ -80,6 +80,8 @@ include con/player.con
 undefinevolume 1
 undefinevolume 2
 
+definevolumename 0 Begin Run
+
 definelevelname 0 0 maps/flr0.map 01:00 01:00 GROUND FLOOR
 definelevelname 0 1 maps/flr1.map 01:00 01:00 FLOOR 1
 definelevelname 0 2 maps/flr2.map 01:00 01:00 FLOOR 2
@@ -350,6 +352,11 @@ useractor 0 GRABBYHAND 0 HAND_SPAWN
           add MOOLAH 50
           money 5
         }
+        // "Horse"
+        ife GRABPIC WOODENHORSE {
+          add MOOLAH 20
+          money 5 
+        }
         
         killit
       }
@@ -426,14 +433,6 @@ defstate handClick
       geta[HITSPRITE].y DELTA_Y
       geta[].x PX
       geta[].y PY
-      
-      // CTAGS
-      var CTAGS
-      geta[HITSPRITE].cstat CTAGS
-      redefinequote 888 Ctags: %d
-      qsprintf 888 888 CTAGS
-      quote 888
-      echo 888
 
       sub DELTA_X PX
       sub DELTA_Y PY
@@ -456,6 +455,22 @@ defstate handClick
   set RETURN -1
 ends
 
+
+////// Interactables //////
+useractor 0 WOODENHORSE
+  cstat 257 // Blocking, Hitscan
+enda
+
+////// Money //////
+move MONEYMOVE 32 32
+useractor 0 MONEY
+  move MONEYMOVE fleeenemy
+  
+  iffloordistl 1
+    killit
+  
+  //fall
+enda
 
 ////// FIRE SHIT //////
 // action <name> <startframe> <frames> <viewtype> <incvalue> <delay>
@@ -795,6 +810,15 @@ onevent EVENT_GAME
       sub MOOLAH 200
       add FLOORNUM 1
       startlevel 0 FLOORNUM
+    }
+  }
+  
+  // Killing floor
+  ife SECLOW 34 iffloordistl 50 {
+    iffloordistl 1 {
+  
+    } else {
+      addphealth -200
     }
   }
 endevent

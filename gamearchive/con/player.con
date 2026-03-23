@@ -241,9 +241,15 @@ actor APLAYER 100 PSTAND 0 0
         break
     }
 
+    setp .runspeed 53200
     ifp ponsteroids
     {
         // setu .god 1
+        setp .runspeed 60000
+        var STEROIDS
+        getp .steroids_amount STEROIDS
+        sub STEROIDS 1
+        setp .steroids_amount STEROIDS
 
         ifp pstanding { }
         else {

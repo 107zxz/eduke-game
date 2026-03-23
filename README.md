@@ -2,10 +2,9 @@ eduke-game ACME convenience commands :P
 
 // Make commands
 ◊make◊
-◊make mapster◊
 
-◊eduke32 -usecwd -j gamearchive -e1 -l3◊
-◊mapster32 -usecwd -j ./gamearchive/ -m gamearchive/maps/flr2.map◊
+◊../eduke32/eduke32 -usecwd -j gamearchive -h gamearchive/DUKE3D.DEF -v1 -l3◊
+◊../eduke32/mapster32 -usecwd -j gamearchive -h gamearchive/DUKE3D.DEF◊
 
 ◊nix run nixpkgs#sladeUnstable◊
 
