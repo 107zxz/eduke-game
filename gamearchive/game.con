@@ -105,7 +105,7 @@ var CURSOR_Y
 var FIRE_ACTOR
 var KEEPER_ACTOR
 
-var MOOLAH 9990
+var MOOLAH 0
 var FLOORNUM 0
 
 defstate getfloorcost
@@ -248,6 +248,8 @@ action HAND_RETRC 0 1 1 0 3
 
 define GRABBYHAND 2564 // Temp sprite number
 useractor 0 GRABBYHAND 0 HAND_SPAWN
+  spriteflags SFLAG_NOCLIP
+
   ifaction HAND_SPAWN {
     // sound KICK_HIT
     sizeat 30 30
@@ -343,19 +345,39 @@ useractor 0 GRABBYHAND 0 HAND_SPAWN
         }
 
         // Chair
-        ife GRABPIC 556 {
-          add MOOLAH 30
-          money 5
+        ife GRABPIC CHAIR1 {
+          add MOOLAH 30            
+          definequote 680 Stole chair, yoink! ($30)
+          userquote 680
+          money 10
         }
         // Pipe
-        ife GRABPIC 1005 {
+        ife GRABPIC PIPE5B {
           add MOOLAH 50
-          money 5
+          definequote 681 Stole pipe, heavy! ($50)
+          userquote 681
+          money 10
         }
         // "Horse"
         ife GRABPIC WOODENHORSE {
           add MOOLAH 20
-          money 5 
+          definequote 682 Stole barricade, illegal! ($20)
+          userquote 682
+          money 10
+        }
+        // Painting
+        ife GRABPIC 1075 {
+          add MOOLAH 600
+          definequote 683 Stole Mona Lisa, Hell yeah! ($600)
+          userquote 683
+          money 20
+        }
+        // Bottle
+        ife GRABPIC BOTTLE3 {
+          add MOOLAH 40
+          definequote 684 Stole Beer, but I don't drink! ($40)
+          userquote 684
+          money 10
         }
         
         killit
@@ -553,9 +575,11 @@ useractor 0 KEEPER_SPR 0 KEEPER_SPAWN
 enda
 
 
-////// STEROID / SANDWICH SHIT //////
+////// COFFEE SHIT //////
 useractor 0 2469
   ifpdistl RETRIEVEDISTANCE {
+    definequote 670 Coffee! Hell Yeah!
+    userquote 670
     
     addinventory 0 100
     spawn EXPLOSION2
@@ -606,9 +630,6 @@ appendevent EVENT_ENTERLEVEL
 
   set INGAMEMENU 0
 endevent
-
-
-
 
 onevent EVENT_PREUPDATEANGLES
   var DELTA_X
@@ -814,11 +835,11 @@ onevent EVENT_GAME
   }
   
   // Killing floor
-  ife SECLOW 34 iffloordistl 50 {
-    iffloordistl 1 {
-  
-    } else {
-      addphealth -200
-    }
-  }
+//  ife SECLOW 34 iffloordistl 50 {
+//    iffloordistl 1 {
+//  
+//    } else {
+//      addphealth -200
+//    }
+//  }
 endevent

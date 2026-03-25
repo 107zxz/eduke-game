@@ -1,15 +1,15 @@
 ////// PLAYERCODESHIT ///////
-action PSTAND       0   1   5   1    1
+action PSTAND       0   1   1   0    1
 action PEXPLODE     106   5   1   1   10
 action PEXPLODEAD   113   1   1
 
 action PJPHOUVER    15   1   5   1
-action PWALK        20   4   5   1   16
-action PRUN         20   4   5   1   10
+action PWALK        0   4   1   1   16
+action PRUN         0   4   1   1   10
 action PWALKBACK    45   4   5  -1   16
 action PRUNBACK     45   4   5  -1   10
-action PJUMPING     50   4   5   1   30
-action PFALLING     65   1   5
+action PJUMPING     1   1   1   0   30
+action PFALLING     0   1   1
 action PDUCKING     86   1   5
 action PCRAWLING    86   3   5   1   20
 action PAKICKING    40   2   5   1   25
@@ -109,7 +109,7 @@ enda
 // TODO: Impl this
 action PEATSANDWICH    395   2   5   1   17
 
-actor APLAYER 100 PSTAND 0 0
+actor APLAYER 10 PSTAND 0 0
     cstat 0
 
     ifaction 0 action PSTAND
@@ -387,42 +387,42 @@ actor APLAYER 100 PSTAND 0 0
         }
     }
 
-    ifaction PDUCKING
-    {
-        ifgapzl 48
-        {
-            ifp pwalking pwalkingback prunning prunningback action PCRAWLING
-        }
-        else ifp pducking
-        {
-            ifp pwalking pwalkingback prunning prunningback action PCRAWLING
-        }
-        else
-        {
-            ifp pstanding action PSTAND
-            else state check_pstandard
-        }
-    }
+//    ifaction PDUCKING
+//    {
+//        ifgapzl 48
+//        {
+//            ifp pwalking pwalkingback prunning prunningback action PCRAWLING
+//        }
+//        else ifp pducking
+//        {
+//            ifp pwalking pwalkingback prunning prunningback action PCRAWLING
+//        }
+//        else
+//        {
+//            ifp pstanding action PSTAND
+//            else state check_pstandard
+//        }
+//    }
+//
+//    else ifaction PCRAWLING
+//    {
+//        ifgapzl 48
+//        {
+//            ifp pstanding action PCRAWLING
+//        }
+//        else ifp pducking
+//        {
+//            ifp pstanding action PDUCKING
+//        }
+//        else
+//        {
+//            ifp pstanding action PSTAND
+//            else state check_pstandard
+//        }
+//    }
+//    else ifgapzl 48 action PDUCKING
 
-    else ifaction PCRAWLING
-    {
-        ifgapzl 48
-        {
-            ifp pstanding action PCRAWLING
-        }
-        else ifp pducking
-        {
-            ifp pstanding action PDUCKING
-        }
-        else
-        {
-            ifp pstanding action PSTAND
-            else state check_pstandard
-        }
-    }
-    else ifgapzl 48 action PDUCKING
-
-    else ifaction PJUMPING
+    ifaction PJUMPING
     {
         ifp ponground action PSTAND
         else ifactioncount 4 ifp pfalling action PFALLING
