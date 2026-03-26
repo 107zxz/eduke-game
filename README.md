@@ -1,8 +1,6 @@
 eduke-game ACME convenience commands :P
 
 // Make commands
-◊make◊
-
 ◊../eduke32/eduke32 -usecwd -j gamearchive -v1 -l1◊
 ◊../eduke32/mapster32 -usecwd -j gamearchive◊
 ◊nix run nixpkgs#zulu -- -jar ../BAFed_2.20/BAFed.jar◊
