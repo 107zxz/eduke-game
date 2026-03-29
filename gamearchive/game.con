@@ -109,9 +109,9 @@ var MOOLAH 0
 var FLOORNUM 0
 
 defstate getfloorcost
-  set RETURN FLOORNUM
+  set RETURN LEVEL
   add RETURN 1
-  mul RETURN 100
+  mul RETURN 350
 ends
 
 ////// EXPLOSION SHIT //////
@@ -142,7 +142,6 @@ defstate menuClick
   var FLOORCOST
   state getfloorcost
   set FLOORCOST RETURN
-  mul FLOORCOST 2
 
   ifl CURSOR_Y SCR_H_HALF {
     set INGAMEMENU 0
@@ -483,6 +482,28 @@ useractor 0 WOODENHORSE
   cstat 257 // Blocking, Hitscan
 enda
 
+// Floaty arrow
+// useractor 0 1071
+//   var VHEIGHT
+//   var VWIDTH
+//   var VCLOCK
+//  
+//   set VCLOCK totalclock 
+//   shiftvarl VCLOCK 3
+//   
+//   cos VWIDTH VCLOCK
+//   sin VHEIGHT VCLOCK
+//   
+//   add VWIDTH 17000
+//   add VHEIGHT 17000
+//   
+//   shiftvarr VWIDTH 8
+//   shiftvarr VHEIGHT 8
+//   
+//   seta .xrepeat VWIDTH
+//   seta .yrepeat VHEIGHT 
+// enda
+
 ////// Money //////
 move MONEYMOVE 32 32
 useractor 0 MONEY
@@ -703,8 +724,10 @@ onevent EVENT_DISPLAYSBAR
   // and TXTFLG 262144
 
   // gametext 2822 0 192 666 0 0 26 0 0 xdim ydim
-  redefinequote 666 Loot: $%d
-  qsprintf 666 666 MOOLAH
+  redefinequote 666 Loot: $%d/$%d
+  
+  state getfloorcost
+  qsprintf 666 666 MOOLAH RETURN
   screentext 2822 320 16 65536 0 0 666 0 0 TXTORI 0 5 8 0 0 TXTFLG 0 0 xdim ydim
 
   // Status update on stealing??
@@ -767,7 +790,11 @@ onevent EVENT_DISPLAYSBAR
     or TXTFLG 2
     or TXTFLG 4
 
-    definequote 671 Press E to go up! ($200)
+    redefinequote 671 Press E to go up! ($%d)
+    
+    state getfloorcost
+    
+    qsprintf 671 671 RETURN
     screentext 2822 160 100 65536 0 0 671 0 0 TXTORI 0 5 8 0 0 TXTFLG 0 0 xdim ydim
   }
 
@@ -827,8 +854,10 @@ onevent EVENT_GAME
     // set INGAMEMENU 1
 
     // Go to next level!
-    ifg MOOLAH 200 ifhitspace {
-      sub MOOLAH 200
+    state getfloorcost 
+    
+    ifg MOOLAH RETURN ifhitspace {
+      sub MOOLAH RETURN
       add FLOORNUM 1
       startlevel 0 FLOORNUM
     }
