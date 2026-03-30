@@ -454,6 +454,8 @@ defstate handClick
       geta[HITSPRITE].y DELTA_Y
       geta[].x PX
       geta[].y PY
+      
+      // Special condition: Require the hitscan bit to be set
 
       sub DELTA_X PX
       sub DELTA_Y PY
@@ -675,6 +677,10 @@ onevent EVENT_DISPLAYCROSSHAIR
 endevent
 
 onevent EVENT_PRESSEDFIRE
+  set RETURN -1
+endevent
+
+onevent EVENT_CROUCH
   set RETURN -1
 endevent
 

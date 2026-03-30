@@ -10,8 +10,8 @@ action PWALKBACK    45   4   5  -1   16
 action PRUNBACK     45   4   5  -1   10
 action PJUMPING     1   1   1   0   30
 action PFALLING     0   1   1
-action PDUCKING     86   1   5
-action PCRAWLING    86   3   5   1   20
+
+
 action PAKICKING    40   2   5   1   25
 action PFLINTCHING  106  1   1   1   10
 action PTHROWNBACK  106  5   1   1   18
@@ -40,7 +40,6 @@ state check_pstandard
     else ifp prunningback action PRUNBACK
     else ifp pjumping
         action PJUMPING
-    else ifp pducking action PDUCKING
 ends
 
 state random_wall_jibs
@@ -444,7 +443,6 @@ actor APLAYER 10 PSTAND 0 0
         else ifp prunningback action PRUNBACK
         else ifp pjumping
             action PJUMPING
-        else ifp pducking action PDUCKING
     }
 
     else ifaction PRUN
@@ -455,7 +453,6 @@ actor APLAYER 10 PSTAND 0 0
         else ifp prunningback action PRUNBACK
         else ifp pjumping
             action PJUMPING
-        else ifp pducking action PDUCKING
     }
 
     else ifaction PWALKBACK
@@ -466,7 +463,6 @@ actor APLAYER 10 PSTAND 0 0
         else ifp prunningback action PRUNBACK
         else ifp pjumping
             action PJUMPING
-        else ifp pducking action PDUCKING
     }
 
     else ifaction PRUNBACK
@@ -477,7 +473,6 @@ actor APLAYER 10 PSTAND 0 0
         else ifp pwalkingback action PWALKBACK
         else ifp pjumping
             action PJUMPING
-        else ifp pducking action PDUCKING
     }
 enda
 
