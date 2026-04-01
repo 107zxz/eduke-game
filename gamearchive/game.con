@@ -85,6 +85,7 @@ definevolumename 0 Begin Run
 definelevelname 0 0 maps/flr0.map 01:00 01:00 GROUND FLOOR
 definelevelname 0 1 maps/flr1.map 01:00 01:00 FLOOR 1
 definelevelname 0 2 maps/flr2.map 01:00 01:00 FLOOR 2
+definelevelname 0 3 maps/flr3.map 01:00 01:00 FLOOR 3
 
 undefineskill 0
 undefineskill 1
@@ -353,7 +354,7 @@ useractor 0 GRABBYHAND 0 HAND_SPAWN
 				// Pipe
 				ife GRABPIC PIPE5B {
 					add MOOLAH 50
-					definequote 681 Stole pipe, heavy! ($50)
+					definequote 681 Stole pipe, heavy! ($80)
 					userquote 681
 					money 10
 				}
@@ -490,28 +491,6 @@ ends
 useractor 0 WOODENHORSE
 	cstat 257 // Blocking, Hitscan
 enda
-
-// Floaty arrow
-// useractor 0 1071
-//	 var VHEIGHT
-//	 var VWIDTH
-//	 var VCLOCK
-//	
-//	 set VCLOCK totalclock 
-//	 shiftvarl VCLOCK 3
-//	 
-//	 cos VWIDTH VCLOCK
-//	 sin VHEIGHT VCLOCK
-//	 
-//	 add VWIDTH 17000
-//	 add VHEIGHT 17000
-//	 
-//	 shiftvarr VWIDTH 8
-//	 shiftvarr VHEIGHT 8
-//	 
-//	 seta .xrepeat VWIDTH
-//	 seta .yrepeat VHEIGHT 
-// enda
 
 ////// Money //////
 move MONEYMOVE 32 32
@@ -728,6 +707,11 @@ onevent EVENT_DISPLAYSBAR
 		set RETURN -1
 		return
 	}
+	
+	ife LEVEL 3 {
+		set RETURN -1
+		return	
+	}
 
 	var TXTORI
 	set TXTORI 0
@@ -908,7 +892,11 @@ endevent
 
 
 // Boss
-move bossmove 320 320
-useractor 0 BOSS3 {
-
-}
+// move bossmove 1 1
+// action bosswalk 0 1 1 0 5
+// useractor 1 BOSS3 100 bosswalk {
+// 	ifaction bosswalk
+// 		ifmove bossmove nullop
+// 		else
+// 			move bossmove
+// }
