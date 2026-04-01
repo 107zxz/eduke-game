@@ -5,8 +5,6 @@ eduke-game ACME convenience commands :P
 ◊../eduke32/mapster32 -usecwd -j gamearchive◊
 ◊nix run nixpkgs#zulu -- -jar ../BAFed_2.20/BAFed.jar◊
 
-◊nix run nixpkgs#sladeUnstable◊
-
 // Open the wiki
 https://wiki.eduke32.com/wiki/Main_Page
 
