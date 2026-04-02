@@ -115,6 +115,41 @@ defstate getfloorcost
 	mul RETURN 350
 ends
 
+defstate spawncash
+	var MONEYCOUNT
+	set MONEYCOUNT 0
+	
+	whilevarl MONEYCOUNT 5 {
+		var OFFSET
+		randvar OFFSET 5120
+		
+		espawn 1277
+		var CASHZ
+		geta[RETURN].z CASHZ
+		sub CASHZ 10000
+		add CASHZ OFFSET
+		seta[RETURN].z CASHZ
+	
+		randvar OFFSET 256
+		
+		var CASHX
+		geta[RETURN].x CASHX
+		add CASHX OFFSET
+		sub CASHX 128
+		seta[RETURN].x CASHX
+		
+		randvar OFFSET 256
+		
+		var CASHY
+		geta[RETURN].y CASHY
+		add CASHY OFFSET
+		sub CASHY 128
+		seta[RETURN].y CASHY
+		
+		add MONEYCOUNT 1
+	}
+ends
+
 ////// EXPLOSION SHIT //////
 action EXPLOSION_FRAMES 0 20 1 1 2
 useractor 0 EXPLOSION2 1 EXPLOSION_FRAMES
@@ -349,21 +384,21 @@ useractor 0 GRABBYHAND 0 HAND_SPAWN
 					add MOOLAH 30						
 					definequote 680 Stole chair, yoink! ($30)
 					userquote 680
-					money 10
+					state spawncash
 				}
 				// Pipe
 				ife GRABPIC PIPE5B {
-					add MOOLAH 50
+					add MOOLAH 80
 					definequote 681 Stole pipe, heavy! ($80)
 					userquote 681
-					money 10
+					state spawncash
 				}
 				// "Horse"
 				ife GRABPIC WOODENHORSE {
 					add MOOLAH 20
 					definequote 682 Stole barricade, illegal! ($20)
 					userquote 682
-					money 10
+					state spawncash
 				}
 				// Painting
 				ife GRABPIC 1075 {
@@ -377,14 +412,14 @@ useractor 0 GRABBYHAND 0 HAND_SPAWN
 					add MOOLAH 40
 					definequote 684 Stole Beer, but I don't drink! ($40)
 					userquote 684
-					money 10
+					state spawncash
 				}
 				// Trashcan
 				ife GRABPIC CANWITHSOMETHING {
 					add MOOLAH 30
 					definequote 685 Stole Trash Can, Uhh... ($30)
 					userquote 685
-					money 10
+					state spawncash
 				}
 				
 				killit
@@ -493,14 +528,16 @@ useractor 0 WOODENHORSE
 enda
 
 ////// Money //////
-move MONEYMOVE 32 32
-useractor 0 MONEY
-	move MONEYMOVE fleeenemy
+move MONEYMOVE 64 64
+useractor 0 1277 0
+	cstat 2
+	sizeat 10 10
+	// fall
 	
-	iffloordistl 1
+	move MONEYMOVE randomangle
+	
+	iffloordistl 3
 		killit
-	
-	//fall
 enda
 
 ////// FIRE SHIT //////
@@ -727,9 +764,17 @@ onevent EVENT_DISPLAYSBAR
 	// gametext 2822 0 192 666 0 0 26 0 0 xdim ydim
 	redefinequote 666 Loot: $%d/$%d
 	
+
+	
 	state getfloorcost
 	qsprintf 666 666 MOOLAH RETURN
-	screentext 2822 320 16 65536 0 0 666 0 0 TXTORI 0 5 8 0 0 TXTFLG 0 0 xdim ydim
+	
+	var TXTPAL
+	set TXTPAL 2
+	ifg 	MOOLAH RETURN
+		set TXTPAL 8
+	
+	screentext 2822 320 16 32768 0 0 666 0 TXTPAL TXTORI 0 5 8 0 0 TXTFLG 0 0 xdim ydim
 
 	// Status update on stealing??
 
@@ -796,7 +841,7 @@ onevent EVENT_DISPLAYSBAR
 		state getfloorcost
 		
 		qsprintf 671 671 RETURN
-		screentext 2822 160 100 65536 0 0 671 0 0 TXTORI 0 5 8 0 0 TXTFLG 0 0 xdim ydim
+		screentext 2822 160 100 32768 0 0 671 0 TXTPAL TXTORI 0 5 8 0 0 TXTFLG 0 0 xdim ydim
 	}
 
 	set RETURN -1
@@ -900,3 +945,13 @@ endevent
 // 		else
 // 			move bossmove
 // }
+
+onevent EVENT_SETDEFAULTS
+    // setuserdef[].gametext_xspace MEDFONT_XSPACE_FULL16
+    // setuserdef[].gametext_tracking MEDFONT_XBETWEEN_FULL16
+   
+    setu .textscale 512
+    setu .gametext_pal 7
+    setu .crosshairscale 100
+endevent
+
