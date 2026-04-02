@@ -1,0 +1,7 @@
+grpinfo {
+	name Amy Game
+	size 4799594
+  crc 0x5c912975
+	flags 128
+  dependency 0
+}
